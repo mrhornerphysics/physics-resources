@@ -1,0 +1,682 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Gravitation practice: AP Physics 1, Topic 2.6</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#EEF3F1; --sheet:#FFFFFF; --ink:#16212C; --muted:#56636F; --rule:#CCD7D3; --grid:#DCE5E1;
+  --pen:#1D4E9E; --right:#1F7653; --wrong:#B23A28; --skip:#A26F05; --fill:#C7CDD2; --onfill:#FFFFFF;
+  --serif:"Source Serif 4","Iowan Old Style",Georgia,serif;
+  --ui:"Atkinson Hyperlegible","Segoe UI",system-ui,-apple-system,sans-serif;
+  color-scheme:light;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --paper:#0F151B; --sheet:#17202A; --ink:#E2E8EE; --muted:#9AA6B2; --rule:#2B3743; --grid:#1C2630;
+    --pen:#86A9EC; --right:#5CC392; --wrong:#F08875; --skip:#E0AE45; --fill:#55606B; --onfill:#0F151B;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#0F151B; --sheet:#17202A; --ink:#E2E8EE; --muted:#9AA6B2; --rule:#2B3743; --grid:#1C2630;
+  --pen:#86A9EC; --right:#5CC392; --wrong:#F08875; --skip:#E0AE45; --fill:#55606B; --onfill:#0F151B;
+  color-scheme:dark;
+}
+*,*::before,*::after{box-sizing:inherit}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{
+  margin:0; color:var(--ink); font:17px/1.5 var(--ui);
+  background-color:var(--paper);
+  background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);
+  background-size:24px 24px;
+}
+button{font:inherit;color:inherit;cursor:pointer}
+button:disabled{cursor:not-allowed}
+:focus-visible{outline:3px solid var(--pen);outline-offset:2px}
+
+.wrap{max-width:1200px;margin:0 auto;padding:24px 20px 48px;display:grid;grid-template-columns:310px minmax(0,1fr);gap:28px;align-items:start}
+.panel,.sheet{background:var(--sheet);border:1px solid var(--rule);border-radius:6px}
+aside{position:sticky;top:calc(env(safe-area-inset-top,0px) + 16px)}
+.panel{padding:22px}
+
+h1{font:600 27px/1.15 var(--serif);margin:0;letter-spacing:-.01em}
+.sub{color:var(--muted);margin:4px 0 0;font-size:15px}
+
+.score{margin-top:22px}
+.big{font:600 44px/1 var(--serif);margin:0}
+.big .d{font-size:24px;color:var(--muted);font-weight:400}
+.cap{margin:4px 0 0;font-size:15px}
+.acc{margin:2px 0 0;font-size:14px;color:var(--muted)}
+.bar{display:flex;height:12px;background:var(--grid);border:1px solid var(--rule);border-radius:7px;overflow:hidden;margin:16px 0 12px}
+.bar span{display:block;height:100%;transition:width .45s ease}
+.seg-correct{background:var(--right)} .seg-incorrect{background:var(--wrong)}
+.seg-skipped{background:repeating-linear-gradient(45deg,var(--skip) 0 3px,color-mix(in srgb,var(--skip) 45%,var(--sheet)) 3px 6px)}
+.legend{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:1fr 1fr;gap:4px 12px;font-size:14px}
+.legend b{font-weight:700}
+.sw{display:inline-block;width:12px;height:12px;border-radius:2px;margin-right:7px;vertical-align:-1px}
+.sw.correct{background:var(--right)} .sw.incorrect{background:var(--wrong)}
+.sw.skipped{background:repeating-linear-gradient(45deg,var(--skip) 0 2px,transparent 2px 4px);border:1.5px solid var(--skip)}
+.sw.none{background:var(--sheet);border:1.5px solid var(--rule)}
+
+.navlabel{margin:22px 0 8px;font-size:14px;color:var(--muted)}
+.navgrid{display:grid;grid-template-columns:repeat(7,1fr);gap:6px}
+.cell{position:relative;aspect-ratio:1;border:1.5px solid var(--rule);border-radius:3px;background:var(--sheet);font:700 14px var(--ui);padding:0;display:grid;place-items:center}
+.cell:hover{border-color:var(--ink)}
+.cell .gl{position:absolute;top:1px;right:3px;font-size:9px;line-height:1}
+.cell.correct{background:var(--right);border-color:var(--right);color:var(--onfill)}
+.cell.incorrect{background:var(--wrong);border-color:var(--wrong);color:var(--onfill)}
+.cell.skipped{border-color:var(--skip);background:repeating-linear-gradient(45deg,color-mix(in srgb,var(--skip) 30%,var(--sheet)) 0 3px,var(--sheet) 3px 7px)}
+.cell.current{outline:3px solid var(--pen);outline-offset:2px}
+.cell.pop{animation:pop .45s ease}
+@keyframes pop{0%{transform:scale(.7)}60%{transform:scale(1.14)}100%{transform:scale(1)}}
+
+.side-actions{display:flex;flex-direction:column;gap:8px;margin-top:20px}
+.keys{margin:14px 0 0;font-size:13px;color:var(--muted)}
+@media (hover:none){.keys{display:none}}
+
+.btn{font:700 15px var(--ui);padding:11px 18px;border-radius:4px;border:1.5px solid var(--ink);background:transparent;line-height:1.2}
+.btn:hover:not(:disabled){background:color-mix(in srgb,var(--ink) 7%,transparent)}
+.btn.primary{background:var(--pen);border-color:var(--pen);color:var(--onfill)}
+.btn.primary:hover:not(:disabled){background:color-mix(in srgb,var(--pen) 85%,var(--ink))}
+.btn:disabled{opacity:.42}
+.btn.quiet{border-color:var(--rule)}
+.btn.reset.confirm{background:var(--wrong);border-color:var(--wrong);color:var(--onfill)}
+
+.sheet{padding:clamp(20px,4vw,40px);min-height:420px}
+main.pending{visibility:hidden}
+.qhead{display:flex;align-items:baseline;justify-content:space-between;flex-wrap:wrap;gap:6px 14px;border-bottom:1.5px solid var(--ink);padding-bottom:12px;margin-bottom:22px}
+.qnum{font:600 24px var(--serif);margin:0;outline:none}
+.qnum .of{color:var(--muted);font-weight:400}
+.qstate{font-size:14px;color:var(--muted)}
+.prompt{font:18.5px/1.65 var(--serif);max-width:68ch}
+.prompt p{margin:0 0 .7em}
+.figwrap{margin:18px 0 22px;display:flex;justify-content:center;overflow-x:auto}
+.fig{display:block;max-width:100%;height:auto}
+.fig text{font-family:var(--ui);font-size:13px;fill:var(--ink)}
+.fig text.at{font-size:12.5px}
+.fig text.it{font-family:var(--serif);font-style:italic;font-size:15px}
+.fig text.note{font-size:12px;fill:var(--muted)}
+.fig .g{stroke:var(--grid);stroke-width:1}
+.fig .gm{stroke:var(--rule);stroke-width:1.1}
+.fig .ax{stroke:var(--ink);stroke-width:1.4}
+.fig .ah,.fig .dot{fill:var(--ink)}
+.fig .ln{fill:none;stroke:var(--ink);stroke-width:2.6;stroke-linejoin:round}
+.fig .ln.dash{stroke-dasharray:7 6}
+.fig .ln.thin{stroke-width:1.4;stroke-dasharray:5 4}
+.fig .ln.thick{stroke-width:4}
+.fig .body{fill:var(--sheet);stroke:var(--ink);stroke-width:1.6}
+.fig .sph{fill:var(--fill);stroke:var(--ink);stroke-width:1.3}
+.fig .orbit{fill:none;stroke:var(--ink);stroke-width:1.4}
+.fig .frame{fill:none;stroke:var(--ink);stroke-width:1.2}
+
+table.data{border-collapse:collapse;font:16px var(--ui)}
+table.data th,table.data td{border:1px solid var(--rule);padding:6px 18px;text-align:center}
+table.data th{font-weight:700;background:color-mix(in srgb,var(--grid) 60%,var(--sheet))}
+
+.hint{font-size:15px;color:var(--muted);margin:18px 0 0}
+.opts{display:grid;gap:10px;margin:14px 0 22px;max-width:74ch}
+.opt{display:flex;gap:14px;align-items:flex-start;width:100%;text-align:left;padding:12px 14px;border:1.5px solid var(--rule);border-radius:4px;background:var(--sheet);font:18px/1.5 var(--serif)}
+.opt:hover:not(:disabled){border-color:var(--ink)}
+.opt:disabled{cursor:default}
+.key{flex:none;width:30px;height:30px;border-radius:50%;border:1.5px solid currentColor;display:grid;place-items:center;font:700 14px var(--ui);margin-top:-1px}
+.multi .key{border-radius:4px}
+.otext{flex:1;min-width:0}
+.otext .fig{max-width:min(100%,320px)}
+.opt.sel{border-color:var(--pen);background:color-mix(in srgb,var(--pen) 8%,var(--sheet))}
+.opt.sel .key{background:var(--pen);border-color:var(--pen);color:var(--onfill)}
+.opt.right{border-color:var(--right);background:color-mix(in srgb,var(--right) 10%,var(--sheet))}
+.opt.right .key{background:var(--right);border-color:var(--right);color:var(--onfill)}
+.opt.wrong{border-color:var(--wrong);background:color-mix(in srgb,var(--wrong) 9%,var(--sheet))}
+.opt.wrong .key{background:var(--wrong);border-color:var(--wrong);color:var(--onfill)}
+.tag{flex:none;align-self:center;font:700 13px var(--ui);padding:2px 8px;border-radius:3px}
+.opt.right .tag{color:var(--right)} .opt.wrong .tag{color:var(--wrong)}
+.pair{display:flex;flex-wrap:wrap;gap:4px 28px}
+
+.fb{border-left:4px solid var(--rule);padding:14px 18px;border-radius:0 4px 4px 0;margin:0 0 22px;max-width:74ch;font:17.5px/1.6 var(--serif);animation:reveal .3s ease}
+.fb strong{font-family:var(--ui);display:block;margin-bottom:4px}
+.fb.ok{border-color:var(--right);background:color-mix(in srgb,var(--right) 9%,var(--sheet))}
+.fb.no{border-color:var(--wrong);background:color-mix(in srgb,var(--wrong) 8%,var(--sheet))}
+.fb p{margin:0 0 .5em} .fb p:last-child{margin:0}
+@keyframes reveal{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
+
+.actions{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.navrow{display:flex;justify-content:space-between;gap:10px;margin-top:28px;padding-top:16px;border-top:1px solid var(--rule)}
+
+mjx-container[display="true"]{overflow-x:auto;overflow-y:hidden;max-width:100%;padding:2px 0}
+
+.results h2{font:600 30px/1.2 var(--serif);margin:0 0 6px}
+.results .big{margin-top:14px}
+.results p{max-width:60ch}
+.results h3{font:700 16px var(--ui);margin:24px 0 10px}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{border:1.5px solid var(--wrong);border-radius:4px;background:var(--sheet);padding:7px 12px;font:700 14px var(--ui)}
+.chip:hover{background:color-mix(in srgb,var(--wrong) 10%,var(--sheet))}
+.results .actions{margin-top:26px}
+
+@media (max-width:880px){
+  .wrap{grid-template-columns:1fr;gap:16px;padding:14px 12px 40px}
+  aside{position:static}
+  .navgrid{grid-template-columns:repeat(auto-fill,minmax(38px,1fr))}
+  .prompt{font-size:17.5px}
+  .opt{font-size:17px}
+}
+@media (prefers-reduced-motion: reduce){*{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
+</style>
+<script>
+window.MathJax = {
+  tex: { inlineMath: [['\\(','\\)']], displayMath: [['\\[','\\]']] },
+  svg: { fontCache: 'global' },
+  startup: {
+    typeset: false,
+    ready() {
+      MathJax.startup.defaultReady();
+      MathJax.startup.promise.then(() => { window.__mjReady && window.__mjReady(); });
+    }
+  }
+};
+</script>
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-svg.js" defer></script>
+</head>
+<body>
+<div class="wrap">
+  <aside><div class="panel" id="side"></div></aside>
+  <main id="main" class="sheet pending" aria-live="polite"></main>
+</div>
+<script>
+const R = String.raw;
+
+/* ---------- figure helpers ---------- */
+function svg(W, H, inner, alt) {
+  return `<svg class="fig" viewBox="0 0 ${W} ${H}" width="${W}" role="img" aria-label="${alt}">${inner}</svg>`;
+}
+function arrow(x1, y1, x2, y2) {
+  const a = Math.atan2(y2 - y1, x2 - x1), L = 8, w = 3.8;
+  const bx = x2 - L * Math.cos(a), by = y2 - L * Math.sin(a);
+  const p1 = [bx + w * Math.sin(a), by - w * Math.cos(a)], p2 = [bx - w * Math.sin(a), by + w * Math.cos(a)];
+  const f = n => n.toFixed(1);
+  return `<line class="ax" x1="${f(x1)}" y1="${f(y1)}" x2="${f(bx)}" y2="${f(by)}"/><polygon class="ah" points="${f(x2)},${f(y2)} ${f(p1[0])},${f(p1[1])} ${f(p2[0])},${f(p2[1])}"/>`;
+}
+function graph(o) {
+  const W = o.w || 380, H = o.h || 250, ml = o.ml || 56, mr = o.mr || 18, mt = 16, mb = 44;
+  const pw = W - ml - mr, ph = H - mt - mb;
+  const X = x => +(ml + x / o.xMax * pw).toFixed(1), Y = y => +(mt + ph - y / o.yMax * ph).toFixed(1);
+  let s = '';
+  const lines = (step, max, cls, vertical) => {
+    if (!step) return;
+    for (let i = 1; ; i++) {
+      const v = i * step; if (v > max * 1.0001) break;
+      s += vertical ? `<line class="${cls}" x1="${X(v)}" y1="${mt}" x2="${X(v)}" y2="${mt + ph}"/>`
+                    : `<line class="${cls}" x1="${ml}" y1="${Y(v)}" x2="${ml + pw}" y2="${Y(v)}"/>`;
+    }
+  };
+  lines(o.xGrid, o.xMax, 'g', true); lines(o.yGrid, o.yMax, 'g', false);
+  lines(o.xMajor, o.xMax, 'gm', true); lines(o.yMajor, o.yMax, 'gm', false);
+  s += arrow(ml, mt + ph, ml + pw + 12, mt + ph) + arrow(ml, mt + ph, ml, mt - 10);
+  const fx = o.xFmt || String, fy = o.yFmt || String;
+  (o.xTicks || []).forEach(v => { s += `<line class="ax" x1="${X(v)}" y1="${mt + ph}" x2="${X(v)}" y2="${mt + ph + 5}"/><text x="${X(v)}" y="${mt + ph + 19}" text-anchor="middle">${fx(v)}</text>`; });
+  (o.yTicks || []).forEach(v => { s += `<line class="ax" x1="${ml - 5}" y1="${Y(v)}" x2="${ml}" y2="${Y(v)}"/><text x="${ml - 8}" y="${Y(v) + 4}" text-anchor="end">${fy(v)}</text>`; });
+  s += `<text class="at" x="${ml + pw / 2}" y="${H - 6}" text-anchor="middle">${o.xLabel}</text>`;
+  if (Array.isArray(o.yLabel)) {
+    s += `<text class="at" transform="translate(12 ${mt + ph / 2}) rotate(-90)" text-anchor="middle"><tspan x="0" dy="0">${o.yLabel[0]}</tspan><tspan x="0" dy="15">${o.yLabel[1]}</tspan></text>`;
+  } else {
+    s += `<text class="at" transform="translate(16 ${mt + ph / 2}) rotate(-90)" text-anchor="middle">${o.yLabel}</text>`;
+  }
+  (o.series || []).forEach(se => {
+    s += `<polyline class="ln${se.dash ? ' dash' : ''}${se.thick ? ' thick' : ''}" points="${se.pts.map(p => X(p[0]) + ',' + Y(p[1])).join(' ')}"/>`;
+    (se.dots || []).forEach(p => { s += `<circle class="dot" cx="${X(p[0])}" cy="${Y(p[1])}" r="3.4"/>`; });
+  });
+  (o.labels || []).forEach(l => { s += `<text x="${X(l.x)}" y="${Y(l.y)}" text-anchor="${l.a || 'start'}">${l.t}</text>`; });
+  return svg(W, H, s, o.alt);
+}
+const range = (a, b, step) => { const r = []; for (let v = a; v <= b + 1e-9; v += step) r.push(+v.toFixed(6)); return r; };
+const sample = (f, a, b, n = 60) => Array.from({ length: n + 1 }, (_, i) => { const t = a + (b - a) * i / n; return [t, f(t)]; });
+const ints = (f, n = 10) => Array.from({ length: n + 1 }, (_, t) => [t, f(t)]);
+
+/* ---------- figures ---------- */
+const FIG = {
+  q1: graph({ xMax: 6.4, yMax: 22.5, xGrid: 0.5, yGrid: 1, xMajor: 2, yMajor: 5, xTicks: [0, 2, 4, 6], yTicks: [0, 5, 10, 15, 20],
+    xLabel: 'Time (s)', yLabel: 'Speed (m/s)', series: [{ pts: [[0, 0], [6, 21]] }],
+    alt: 'Speed versus time: a straight line from 0 meters per second at 0 seconds to 21 meters per second at 6 seconds, passing through 7 meters per second at 2 seconds.' }),
+  q3: svg(340, 172, `<circle class="body" cx="130" cy="108" r="46"/><text x="130" y="113" text-anchor="middle">Planet</text>
+    <circle class="sph" cx="178" cy="40" r="11"/><text x="178" y="20" text-anchor="middle">Moon A</text>
+    <circle class="sph" cx="264" cy="124" r="11"/><text x="264" y="102" text-anchor="middle">Moon B</text>`,
+    'A planet with Moon A orbiting close to it and Moon B orbiting farther away.'),
+  q4: svg(200, 100, `<circle class="body" cx="56" cy="50" r="42"/><circle class="body" cx="140" cy="50" r="42"/>
+    ${arrow(56, 50, 26.3, 20.3)}<text class="it" x="47" y="34" text-anchor="start">R</text>
+    ${arrow(140, 50, 169.7, 20.3)}<text class="it" x="150" y="34" text-anchor="end">R</text>`,
+    'Two touching solid spheres, each of radius R.'),
+  q5: svg(392, 180, `<ellipse class="orbit" cx="190" cy="90" rx="115" ry="72"/>
+    <circle class="dot" cx="180" cy="94" r="11"/><text x="180" y="127" text-anchor="middle">Planet</text>
+    <circle class="dot" cx="75" cy="90" r="5"/><text x="66" y="84" text-anchor="end">Moon at</text><text x="66" y="100" text-anchor="end">position A</text>
+    <circle class="dot" cx="305" cy="90" r="5"/><text x="314" y="84">Moon at</text><text x="314" y="100">position B</text>`,
+    'A moon on an elliptical orbit around a planet, shown at position A on the left end and position B on the right end of the ellipse.'),
+  q8: svg(440, 178, `<circle class="body" cx="70" cy="85" r="30"/><text x="70" y="40" text-anchor="middle">Planet A</text><text class="it" x="70" y="138" text-anchor="middle">2m</text>
+    <circle class="body" cx="220" cy="85" r="12"/><text x="220" y="58" text-anchor="middle">Planet B</text><text class="it" x="220" y="118" text-anchor="middle">m</text>
+    <circle class="body" cx="372" cy="85" r="52"/><text x="372" y="24" text-anchor="middle">Star</text><text class="it" x="372" y="122" text-anchor="middle">M</text>
+    <line class="ax" x1="70" y1="78" x2="70" y2="92"/><line class="ax" x1="220" y1="78" x2="220" y2="92"/><line class="ax" x1="372" y1="78" x2="372" y2="92"/>
+    ${arrow(134, 85, 71, 85)}${arrow(156, 85, 219, 85)}<text class="it" x="145" y="90" text-anchor="middle">R</text>
+    ${arrow(285, 85, 221, 85)}${arrow(307, 85, 371, 85)}<text class="it" x="296" y="90" text-anchor="middle">R</text>
+    <text class="note" x="220" y="170" text-anchor="middle">Note: figure not drawn to scale.</text>`,
+    'Planet A of mass 2m, Planet B of mass m, and a star of mass M in a line. Planet A is a distance R from Planet B, and Planet B is a distance R from the star.'),
+  q14: svg(400, 150, `<text x="60" y="18" text-anchor="middle">Planet 1</text><text class="it" x="60" y="37" text-anchor="middle">M₁</text><circle class="body" cx="60" cy="72" r="26"/>
+    <text x="340" y="18" text-anchor="middle">Planet 2</text><text class="it" x="340" y="37" text-anchor="middle">M₂</text><circle class="body" cx="340" cy="72" r="26"/>
+    <line class="ln thin" x1="86" y1="72" x2="314" y2="72"/>
+    <line class="ax" x1="60" y1="106" x2="60" y2="114"/><line class="ax" x1="340" y1="106" x2="340" y2="114"/>
+    <text x="60" y="134" text-anchor="middle"><tspan font-style="italic">x</tspan> = 0</text><text x="340" y="134" text-anchor="middle"><tspan font-style="italic">x</tspan> = <tspan font-style="italic">L</tspan></text>`,
+    'Planet 1 of mass M1 at x equals 0 and Planet 2 of mass M2 at x equals L, joined by a dashed line.'),
+  q18: `<table class="data"><thead><tr><th>Time (s)</th><th>Vertical velocity (m/s)</th></tr></thead><tbody>
+    <tr><td>0</td><td>0.0</td></tr><tr><td>1</td><td>−4.9</td></tr><tr><td>2</td><td>−10.2</td></tr><tr><td>3</td><td>−15.6</td></tr>
+    <tr><td>4</td><td>−19.7</td></tr><tr><td>5</td><td>−24.4</td></tr><tr><td>6</td><td>−30.9</td></tr></tbody></table>`,
+  q19: graph({ xMax: 10.6, yMax: 148, xGrid: 1, yGrid: 20, xTicks: [0, 5, 10], yTicks: [0, 20, 40, 60, 80, 100, 120, 140],
+    xLabel: 'Time (s)', yLabel: 'Vertical position (m)',
+    series: [{ pts: sample(t => 100 + 20 * t - 3 * t * t, 0, 10), dots: ints(t => 100 + 20 * t - 3 * t * t) }],
+    alt: 'Vertical position versus time: a downward-opening parabola starting at 100 meters at 0 seconds, peaking near 133 meters at about 3.3 seconds, and reaching 0 meters at 10 seconds.' }),
+  q23: svg(440, 115, `<circle class="body" cx="50" cy="52" r="34"/><text x="50" y="57" text-anchor="middle">Planet</text>
+    <circle class="dot" cx="160" cy="52" r="4"/><text class="it" x="160" y="38" text-anchor="middle">A</text>
+    <circle class="dot" cx="210" cy="52" r="4"/><text class="it" x="210" y="38" text-anchor="middle">B</text>
+    <circle class="dot" cx="260" cy="52" r="4"/><text class="it" x="260" y="38" text-anchor="middle">C</text>
+    <circle class="body" cx="370" cy="52" r="10"/><text x="388" y="57">Moon</text>
+    <text class="note" x="220" y="106" text-anchor="middle">Note: figure not drawn to scale.</text>`,
+    'A planet on the left and a moon on the right, with positions A, B, and C between them. B is midway between the centers; A is closer to the planet and C is closer to the moon.'),
+  q24: graph({ xMax: 8.4, yMax: 42, xGrid: 2, yGrid: 10, xTicks: [0, 2, 4, 6, 8], yTicks: [0, 10, 20, 30, 40],
+    xLabel: 'Time (s)', yLabel: 'Speed (m/s)',
+    series: [{ pts: [[0, 0], [5, 40]] }, { pts: [[0, 0], [7.07, 28.3]], dash: true }],
+    labels: [{ x: 2.3, y: 29, t: 'Planet X', a: 'end' }, { x: 5.3, y: 16.5, t: 'Planet Y' }],
+    alt: 'Speed versus time for two planets. Planet X: a solid line rising steeply from 0 to 40 meters per second at 5 seconds. Planet Y: a dashed line rising less steeply to about 28 meters per second at about 7 seconds.' }),
+  q26: svg(480, 165, `<rect class="frame" x="1" y="1" width="478" height="160"/><line class="frame" x1="120" y1="1" x2="120" y2="161"/><line class="frame" x1="300" y1="1" x2="300" y2="161"/><line class="frame" x1="1" y1="130" x2="479" y2="130"/>
+    <circle class="sph" cx="42" cy="65" r="18"/><circle class="sph" cx="78" cy="65" r="18"/>
+    ${arrow(42, 65, 54.7, 52.3)}<text class="it" x="34" y="58" text-anchor="middle">R</text>${arrow(78, 65, 90.7, 52.3)}<text class="it" x="70" y="58" text-anchor="middle">R</text>
+    <circle class="sph" cx="174" cy="65" r="36"/><circle class="sph" cx="246" cy="65" r="36"/>
+    ${arrow(174, 65, 199.5, 39.5)}<text class="it" x="170" y="46" text-anchor="middle">2R</text>${arrow(246, 65, 271.5, 39.5)}<text class="it" x="242" y="46" text-anchor="middle">2R</text>
+    <circle class="sph" cx="366" cy="65" r="54"/><circle class="sph" cx="438" cy="65" r="18"/>
+    ${arrow(366, 65, 404.2, 26.8)}<text class="it" x="364" y="40" text-anchor="middle">3R</text>${arrow(438, 65, 450.7, 52.3)}<text class="it" x="430" y="58" text-anchor="middle">R</text>
+    <text x="60" y="151" text-anchor="middle">Case A</text><text x="210" y="151" text-anchor="middle">Case B</text><text x="390" y="151" text-anchor="middle">Case C</text>`,
+    'Case A: two touching spheres of radius R. Case B: two touching spheres of radius 2R. Case C: a sphere of radius 3R touching a sphere of radius R.'),
+  q27: graph({ xMax: 4.4, yMax: 43, xGrid: 0.5, yGrid: 5, xMajor: 1, yMajor: 10, xTicks: [1, 2, 3, 4], yTicks: [10, 20, 30, 40],
+    xLabel: 't (s)', yLabel: 'v (m/s)',
+    series: [{ pts: [[0, 0], [4, 40]] }, { pts: [[2, 0], [4, 20]] }],
+    labels: [{ x: 2.85, y: 33, t: 'Object 1', a: 'end' }, { x: 3.3, y: 7, t: 'Object 2' }],
+    alt: 'Speed versus time. Object 1: a straight line from 0 at 0 seconds to 40 meters per second at 4 seconds. Object 2: a parallel line from 0 at 2 seconds to 20 meters per second at 4 seconds.' }),
+  q31: svg(320, 110, `<circle class="sph" cx="50" cy="52" r="9"/><text x="50" y="30" text-anchor="middle">1</text><text class="it" x="50" y="86" text-anchor="middle">M₁</text>
+    <circle class="dot" cx="160" cy="52" r="3.5"/><text class="it" x="160" y="36" text-anchor="middle">P</text>
+    <circle class="sph" cx="270" cy="52" r="17"/><text x="270" y="26" text-anchor="middle">2</text><text class="it" x="270" y="94" text-anchor="middle">M₂</text>`,
+    'A small object 1 of mass M1 on the left, a larger object 2 of mass M2 on the right, and point P halfway between them.')
+};
+
+const g18 = (series, alt) => graph({ w: 270, h: 190, ml: 44, xMax: 11, yMax: 10, xTicks: [0, 5, 10], xLabel: 'Time (s)', yLabel: ['Gravitational', 'field strength'], series, alt });
+const OPT18 = [
+  g18([{ pts: [[0, 0.06], [10, 0.06]], thick: true }], 'Field strength equal to zero for all times.'),
+  g18([{ pts: [[0, 8], [10, 8]] }], 'Field strength constant at a nonzero value.'),
+  g18([{ pts: [[0, 0], [7, 9.5]] }], 'Field strength increasing linearly from zero.'),
+  g18([{ pts: sample(t => 9.5 * Math.pow(t / 7, 3), 0, 7) }], 'Field strength increasing faster and faster, curving upward from zero.')
+];
+const g22 = (o) => graph(Object.assign({ w: 310, h: 230, ml: 100, xMax: 10.6, xGrid: 5, xTicks: [0, 5, 10], xLabel: 'Time (s)' }, o));
+const OPT22 = [
+  g22({ yMax: 1.05, yGrid: 0.1, yTicks: range(0, 1, 0.1), yFmt: v => v === 0 ? '0' : v.toFixed(1), yLabel: 'Net force (N)',
+    series: [{ pts: [[0, 0], [10, 0]], dots: ints(() => 0) }], alt: 'Net force equal to zero at every time.' }),
+  g22({ yMax: 0.000108, yGrid: 0.00002, yTicks: range(0, 0.0001, 0.00002), yFmt: v => v === 0 ? '0' : v.toFixed(5), yLabel: 'Vertical speed (m/s)',
+    series: [{ pts: [[0, 0], [10, 0.0001]], dots: ints(t => t * 0.00001) }], alt: 'Vertical speed increasing linearly from 0 to 0.00010 meters per second at 10 seconds.' }),
+  g22({ yMax: 0.0000108, yGrid: 0.000002, yTicks: range(0, 0.00001, 0.000002), yFmt: v => v === 0 ? '0' : v.toFixed(6), yLabel: ['Vertical acceleration', '(m/s²)'],
+    series: [{ pts: [[0, 0.00001], [10, 0.00001]], dots: ints(() => 0.00001) }], alt: 'Vertical acceleration constant at 0.000010 meters per second squared.' }),
+  g22({ yMax: 10.8, yGrid: 2, yTicks: [0, 2, 4, 6, 8, 10], yLabel: ['Gravitational field', 'strength (N/kg)'],
+    series: [{ pts: [[0, 10], [10, 10]], dots: ints(() => 10) }], alt: 'Gravitational field strength constant at 10 newtons per kilogram.' })
+];
+const pair = (a, b) => `<span class="pair"><span>${a}</span><span>${b}</span></span>`;
+
+/* ---------- questions ---------- */
+const Q = [
+{ fig: FIG.q1, figTop: true,
+  text: R`An object of mass 10 kg is released from rest above the surface of a planet such that the object’s speed as a function of time is shown by the graph above. The force due to gravity exerted on the object is most nearly`,
+  opts: ['3.5 N', '7 N', '35 N', '70 N'], ans: ['C'],
+  exp: R`<p>The slope of a speed–time graph is the acceleration, which for a falling object is the planet’s gravitational field strength: \[g=\frac{(7-0)\ \text{m/s}}{(2-0)\ \text{s}}=3.5\ \text{m/s}^2\]</p><p>Then \(F_g=mg=(10\ \text{kg})(3.5\ \text{m/s}^2)=35\ \text{N}\).</p>` },
+{ text: R`A meteoroid is in a circular orbit 600 km above the surface of a distant planet. The planet has the same mass as Earth but has a radius that is 90% of Earth’s (where Earth’s radius is approximately 6370 km).</p><p>The acceleration of the meteoroid due to the gravitational force exerted by the planet is most nearly`,
+  opts: [R`\(9\ \text{m/s}^2\) toward the center of the planet`, R`\(9\ \text{m/s}^2\) in the direction of the meteoroid’s motion`, R`\(10\ \text{m/s}^2\) toward the center of the planet`, R`\(10\ \text{m/s}^2\) in the direction of the meteoroid’s motion`], ans: ['C'],
+  exp: R`<p>The only force on the meteoroid is gravity, which points toward the planet’s center, so the acceleration does too.</p><p>The orbit radius is \((0.9\times 6370+600)\ \text{km}=6333\ \text{km}\), about 99.4% of Earth’s radius. With Earth’s mass at almost exactly Earth’s radius, \[a=\frac{GM}{r^2}\approx\frac{GM_E}{R_E^{\,2}}=g\approx 10\ \text{m/s}^2\]</p>` },
+{ fig: FIG.q3, figTop: true,
+  text: R`A planet has two moons, Moon A and Moon B, that orbit at different distances from the planet’s center, as shown. Astronomers collect data regarding the planet, the two moons, and their orbits. The astronomers are able to estimate the planet’s radius and mass.</p><p>The masses of the two moons are determined to be \(2M\) for Moon A and \(M\) for Moon B. It is observed that the distance between Moon B and the planet is two times that of the distance between Moon A and the planet. How does the force exerted from the planet on Moon A compare to the force exerted from the planet on Moon B?`,
+  opts: ['The gravitational force exerted from the planet on Moon A is two times larger than the gravitational force exerted from the planet on Moon B.',
+    'The gravitational force exerted from the planet on Moon A is eight times larger than the gravitational force exerted from the planet on Moon B.',
+    'The gravitational force exerted from the planet on Moon A is two times smaller than the gravitational force exerted from the planet on Moon B.',
+    'The gravitational force exerted from the planet on Moon A is eight times smaller than the gravitational force exerted from the planet on Moon B.'], ans: ['B'],
+  exp: R`<p>Use \(F_g=G\dfrac{m_1m_2}{r^2}\) and call Moon A’s distance \(r\): \[F_A=\frac{GM_p(2M)}{r^2},\qquad F_B=\frac{GM_pM}{(2r)^2}=\frac{GM_pM}{4r^2}\]</p><p>So \(\dfrac{F_A}{F_B}=\dfrac{2}{1/4}=8\). Moon A has twice the mass and is half as far, and both effects make its force larger.</p>` },
+{ fig: FIG.q4, figTop: true,
+  text: R`Two solid spheres of radius \(R\) made of the same type of steel are placed in contact, as shown in the figure above. The magnitude of the gravitational force that they exert on each other is \(F_1\). When two other solid spheres of radius \(3R\) made of this steel are placed in contact, what is the magnitude of the gravitational force that they exert on each other?`,
+  opts: [R`\(F_1\)`, R`\(3F_1\)`, R`\(9F_1\)`, R`\(81F_1\)`], ans: ['D'],
+  exp: R`<p>Same steel means mass is proportional to volume, so \(m\propto R^3\). Tripling the radius multiplies each mass by \(3^3=27\).</p><p>Touching spheres have centers \(2R\) apart, so the separation grows from \(2R\) to \(6R\), three times larger: \[\frac{F}{F_1}=\frac{27\times 27}{3^2}=81\]</p>` },
+{ fig: FIG.q5, figTop: true,
+  text: R`The figure above shows the position of a moon that orbits a planet in an elliptical path. Two specific locations of the moon, position A and position B, are labeled.</p><p>In what direction is the net force exerted on the moon?`,
+  opts: ['Toward the planet', 'Toward the center of the ellipse', 'Away from the center of the ellipse', 'Parallel to the direction that the moon is moving at any given instant'], ans: ['A'],
+  exp: R`<p>The only force exerted on the moon is the gravitational force from the planet, so the net force always points toward the planet’s center of mass. In an ellipse the planet is not at the center, so “toward the center of the ellipse” is not the same thing.</p>` },
+{ text: R`A ball of mass \(m\) is found to have a weight \(W_x\) on Planet \(X\). Which of the following is a correct expression for the gravitational field strength of Planet \(X\)?`,
+  opts: [R`The gravitational field strength of Planet \(X\) is \(mg\).`, R`The gravitational field strength of Planet \(X\) is \(W_x/m\).`, R`The gravitational field strength of Planet \(X\) is \(9.8\ \text{N/kg}\).`, R`The gravitational field strength of Planet \(X\) is \(mW_x\).`], ans: ['B'],
+  exp: R`<p>Weight is mass times field strength, \(W_x=mg_x\), so \(g_x=W_x/m\). Gravitational field strength is weight per unit mass. (C) is Earth’s value, which tells you nothing about Planet \(X\).</p>` },
+{ text: R`Two asteroids of mass \(M\) are in deep space far away from any other objects. The centers of the asteroids are a distance \(d\) apart where \(d\) is much larger than the size of the asteroids, and each asteroid exerts a force of magnitude \(F\) on the other. At a later time, the mass of each asteroid has increased to \(2M\) and they are a distance \(\tfrac{d}{2}\) apart. What is the magnitude of the force that each asteroid exerts on the other at this later time?`,
+  opts: [R`\(16F\)`, R`\(8F\)`, R`\(4F\)`, R`\(F\)`], ans: ['A'],
+  exp: R`<p>\[F=\frac{GM^2}{d^2},\qquad F_{\text{later}}=\frac{G(2M)(2M)}{(d/2)^2}=\frac{4GM^2}{d^2/4}=\frac{16\,GM^2}{d^2}=16F\]</p>` },
+{ fig: FIG.q8, figTop: true,
+  text: R`Planets A and B, with masses \(2m\) and \(m\), respectively, orbit a distant star of mass \(M\), as shown. Planet A is a distance \(2R\) from the center of the star, and Planet B is a distance \(R\) from the center of the star. Which of the following is a correct expression for the magnitude of the net force exerted on Planet B?`,
+  opts: [R`\(\dfrac{GmM}{R^2}\)`, R`\(\dfrac{2Gm^2}{R^2}\)`, R`\(\dfrac{Gm}{R^2}(M-2m)\)`, R`\(\dfrac{Gm}{R^2}\left(M-\dfrac{m}{2}\right)\)`], ans: ['C'],
+  exp: R`<p>The star pulls Planet B toward the star, and Planet A pulls it the opposite way. Both are a distance \(R\) from Planet B, so the net force is the difference: \[F_{\text{net}}=\frac{GMm}{R^2}-\frac{G(2m)(m)}{R^2}=\frac{Gm}{R^2}(M-2m)\]</p>` },
+{ text: R`An object is thrown upwards from the surface of a small moon of radius \(R\). The object rises to a height \(3R\) above the surface of the moon before returning to the surface.</p><p>Assuming frictional forces are negligible, which of the following forces are exerted on the object while it is on the way up?`,
+  opts: ['Only a decreasing gravitational force that is exerted downward', 'Only an increasing gravitational force that is exerted downward', 'Only a constant gravitational force that is exerted downward', 'Both a constant gravitational force exerted downward and a decreasing force that acts upward'], ans: ['A'],
+  exp: R`<p>Gravity depends on the distance from the moon’s <em>center</em>. At the surface \(r=R\); at the top of the path \(r=R+3R=4R\), so the force drops to \(\tfrac{1}{16}\) of its surface value. Near the surface we can treat gravity as constant, but not over a distance this large.</p><p>Gravity always points toward the moon, and nothing pushes the object upward once it has left the thrower’s hand.</p>` },
+{ text: R`A hypothetical spherical planet of mass \(M\) and radius \(R\) is made of a uniform substance and has a gravitational field \(g\) at its surface. Suppose eight of these identical planets collide and combine into a new uniform, spherical planet. What will the gravitational field on the surface of this new planet be in terms of \(g\)?`,
+  opts: [R`\(g\)`, R`\(2g\)`, R`\(4g\)`, R`\(8g\)`], ans: ['B'],
+  exp: R`<p>Eight times the mass of the same material means eight times the volume. Because \(V=\tfrac43\pi r^3\), eight times the volume means twice the radius: \[g_{\text{new}}=\frac{G(8M)}{(2R)^2}=\frac{8}{4}\cdot\frac{GM}{R^2}=2g\]</p>` },
+{ text: R`On the surface of Earth, a spacecraft has weight \(F_{g,E}\). The mass and radius of Earth are \(M_E\) and \(R_E\), respectively. The spacecraft lands on a distant planet, and its weight on the surface of the planet is \(\dfrac{F_{g,E}}{4}\). Which of the following are possible combinations of mass and radius of the distant planet?`,
+  opts: [R`\(\tfrac12M_E\) and \(2R_E\)`, R`\(M_E\) and \(2R_E\)`, R`\(M_E\) and \(\tfrac12R_E\)`, R`\(2M_E\) and \(\tfrac12R_E\)`], ans: ['B'],
+  exp: R`<p>Surface weight is proportional to \(M/R^2\). For \(M_E\) and \(2R_E\): \[F_g=\frac{GmM_E}{(2R_E)^2}=\frac14\cdot\frac{GmM_E}{R_E^{\,2}}=\frac14F_{g,E}\]</p><p>The other choices give \(\tfrac18\) (A), 4 times (C), and 8 times (D) the Earth weight.</p>` },
+{ text: R`A new planet is discovered that has twice the Earth’s mass and twice the Earth’s radius. On the surface of this new planet, a person who weighs 500 N on Earth would experience a gravitational force of`,
+  opts: ['125 N', '250 N', '500 N', '1000 N', '2000 N'], ans: ['B'],
+  exp: R`<p>Surface weight is proportional to \(M/R^2\), so the factor is \(\dfrac{2}{2^2}=\dfrac12\). Half of 500 N is 250 N.</p>` },
+{ text: R`A satellite of mass 1000 kg is in a circular orbit around a planet. The centripetal acceleration of the satellite in its orbit is \(5\ \text{m/s}^2\). What is the gravitational force exerted on the satellite by the planet?`,
+  opts: ['0 N', '200 N', '5000 N', '10,000 N'], ans: ['C'],
+  exp: R`<p>Gravity is the only force on the satellite, so it provides the centripetal force, and the centripetal acceleration equals the gravitational field strength at the orbit: \[F_g=ma_c=(1000\ \text{kg})(5\ \text{m/s}^2)=5000\ \text{N}\]</p>` },
+{ fig: FIG.q14, figTop: true,
+  text: R`Planet 1 of mass \(M_1\) is located at position \(x=0\). Planet 2 of mass \(M_2\) is located at position \(x=L\). Which of the following equations correctly indicates the position \(x_{\text{eq}}\) along the \(x\)-axis where an object could be placed and experience no acceleration?`,
+  opts: [R`\(x_{\text{eq}}=\left(\sqrt{\dfrac{M_1}{M_1+M_2}}\right)L\)`, R`\(x_{\text{eq}}=\left(\sqrt{\dfrac{M_2}{M_1+M_2}}\right)L\)`, R`\(x_{\text{eq}}=\left(\dfrac{\sqrt{M_1}}{\sqrt{M_1}+\sqrt{M_2}}\right)L\)`, R`\(x_{\text{eq}}=\left(\dfrac{\sqrt{M_2}}{\sqrt{M_1}+\sqrt{M_2}}\right)L\)`], ans: ['C'],
+  exp: R`<p>No acceleration means the two gravitational forces on an object of mass \(m\) are equal in size. The object is \(x_{\text{eq}}\) from Planet 1 and \(L-x_{\text{eq}}\) from Planet 2: \[\frac{GmM_1}{x_{\text{eq}}^2}=\frac{GmM_2}{(L-x_{\text{eq}})^2}\;\Rightarrow\;\frac{\sqrt{M_1}}{x_{\text{eq}}}=\frac{\sqrt{M_2}}{L-x_{\text{eq}}}\] \[\sqrt{M_1}\,L=x_{\text{eq}}\left(\sqrt{M_1}+\sqrt{M_2}\right)\;\Rightarrow\;x_{\text{eq}}=\left(\frac{\sqrt{M_1}}{\sqrt{M_1}+\sqrt{M_2}}\right)L\]</p>` },
+{ text: R`An astronaut with mass \(M_A\) is within a satellite that orbits Earth at a height \(H\) above its surface. Earth has a mass \(M_E\) and radius \(R_E\). Which of the following is a correct expression for the gravitational force exerted on the astronaut by Earth?`,
+  opts: [R`\(F_g=G\dfrac{M_EM_A}{H^2}\)`, R`\(F_g=G\dfrac{M_EM_A}{R_E^{\,2}}\)`, R`\(F_g=G\dfrac{M_EM_A}{(R_E+H)^2}\)`, R`\(F_g=0\)`], ans: ['C'],
+  exp: R`<p>The distance in Newton’s law of gravitation is measured center to center. The astronaut is \(R_E+H\) from Earth’s center. Orbiting astronauts feel “weightless” because they are in free fall, not because gravity is zero.</p>` },
+{ text: R`A spacecraft is placed in a circular orbit around a planet with mass \(6.4\times10^{23}\ \text{kg}\). The spacecraft orbits at a height of \(4.5\times10^{7}\ \text{m}\) above the planet’s surface. What additional information is needed to calculate the speed of the spacecraft in the orbit?`,
+  opts: ['No additional information', 'The planet’s radius only', 'The spacecraft’s mass only', 'Both the planet’s radius and the spacecraft’s mass'], ans: ['B'],
+  exp: R`<p>Setting gravity equal to the centripetal force, \(\dfrac{GMm}{r^2}=\dfrac{mv^2}{r}\), gives \(v=\sqrt{GM/r}\). The spacecraft’s mass cancels. But \(r\) is measured from the planet’s center, so you need the planet’s radius to add to the given height.</p>` },
+{ text: R`Planet X has twice Earth’s mass and three times Earth’s radius. The magnitude of the gravitational field near Planet X’s surface is most nearly`,
+  opts: ['2 N/kg', '7 N/kg', '10 N/kg', '20 N/kg'], ans: ['A'],
+  exp: R`<p>Surface field strength is proportional to \(M/R^2\): \[g_X=\frac{2}{3^2}\,(9.8\ \text{N/kg})\approx 2.2\ \text{N/kg}\] which is most nearly 2 N/kg.</p>` },
+{ fig: FIG.q18, figTop: true,
+  text: R`An astronaut performs an experiment near the surface of a moon by releasing an object at rest above a motion detector so that data can be collected about the object’s vertical velocity as a function of time. The data are provided in the table. Which of the following graphs most likely represents the shape of the curve of the magnitude of the gravitational field strength near the surface of the moon as a function of time?`,
+  opts: OPT18, ans: ['B'],
+  exp: R`<p>The velocity changes by about \(-5\ \text{m/s}\) every second for the whole fall (within experimental error), so the acceleration is constant at roughly \(5\ \text{m/s}^2\). That acceleration is the gravitational field strength, so the graph is a horizontal line at a nonzero value.</p>` },
+{ fig: FIG.q19, figTop: true,
+  text: R`An object is thrown upward with a speed of 20 m/s near the surface of a planet where the gravitational field strength is a constant magnitude of 6 N/kg. The vertical position versus time of the object is shown in the graph. Is the object considered to be in free fall?`,
+  opts: ['Yes, because the only force exerted on the object is the force due to gravity from the planet.', 'Yes, because any object that falls is considered to be in free fall.', R`No, because the object does not fall with an acceleration of nearly \(10\ \text{m/s}^2\).`, 'No, because the object has an acceleration due to gravity that is different from the gravitational field strength of the planet.'], ans: ['A'],
+  exp: R`<p>If gravity is the only force, the acceleration equals the field strength, \(-6\ \text{m/s}^2\). Test that against the graph: \[y=y_0+v_0t+\tfrac12at^2=100+(20)(10)+\tfrac12(-6)(10)^2=0\ \text{m}\] which matches the object reaching 0 m at 10 s.</p><p>Free fall means gravity is the only force acting, on any planet and at any field strength. It does not require \(10\ \text{m/s}^2\).</p>` },
+{ text: R`A satellite of mass \(m\) orbits a moon of mass \(M\) in uniform circular motion with a constant tangential speed of \(v\).</p><p>The gravitational field strength at a distance \(R\) from the center of the moon is \(g_R\). The satellite is moved to a new circular orbit that is \(2R\) from the center of the moon. What is the gravitational field strength of the moon at this new distance?`,
+  opts: [R`\(\dfrac{g_R}{4}\)`, R`\(\dfrac{g_R}{2}\)`, R`\(2g_R\)`, R`\(4g_R\)`], ans: ['A'],
+  exp: R`<p>From \(g=\dfrac{GM}{r^2}\), doubling the distance from the moon’s center divides the field strength by \(2^2=4\).</p>` },
+{ text: R`A spaceship is traveling from Earth to the Moon. Which of the following is true of the gravitational force on the ship due to the two objects when the ship is equidistant from Earth and the Moon?`,
+  opts: ['There is no net force because the ship is beyond the influence of Earth and the Moon.', 'There is no net force because the forces exerted by Earth and the Moon balance.', 'There is a net force because the force exerted by Earth is smaller than that exerted by the Moon.', 'There is a net force because the force exerted by Earth is greater than that exerted by the Moon.', 'There is a net force because the ship must be accelerating toward the Moon.'], ans: ['D'],
+  exp: R`<p>At equal distances, each force is proportional to the mass pulling. Earth is about 81 times more massive than the Moon, so Earth’s pull is much larger and the net force points toward Earth. Gravity never “runs out,” so (A) is wrong, and (E) has the direction backward.</p>` },
+{ multi: true,
+  text: R`On the surface of a spherical asteroid, a small object of mass \(1\times10^{-5}\ \text{kg}\) that has a weight of \(1\times10^{-10}\ \text{N}\) is held above the surface. Which of the following graphs correctly shows the object’s motion if it is dropped from rest near the asteroid’s surface? Select two answers.`,
+  opts: OPT22, ans: ['B', 'C'],
+  exp: R`<p>First find the acceleration due to gravity: \[g=\frac{F_g}{m}=\frac{1\times10^{-10}\ \text{N}}{1\times10^{-5}\ \text{kg}}=1\times10^{-5}\ \text{m/s}^2=0.00001\ \text{m/s}^2\]</p><p>(B) is correct: the slope of the speed graph is \(0.00010/10=0.00001\ \text{m/s}^2\). (C) is correct: it shows that constant acceleration directly. (A) is wrong because the net force is \(1\times10^{-10}\ \text{N}\), not zero. (D) shows Earth’s field strength, not the asteroid’s.</p>` },
+{ fig: FIG.q23, figTop: true,
+  text: R`A spaceship travels from a planet to a moon and passes through the three positions \(A\), \(B\), and \(C\), shown above. Position \(B\) is midway between the centers of the planet and the moon. The planet has a larger mass than the moon. At which location could the net gravitational force exerted on the spaceship be approximately zero?`,
+  opts: [R`Position \(A\)`, R`Position \(B\)`, R`Position \(C\)`, 'It cannot be determined without knowing the masses of the planet, the moon, and the spaceship, and the exact distance the spaceship is from the planet and the moon.'], ans: ['C'],
+  exp: R`<p>At the same distance, the planet pulls harder than the moon because it has more mass. So at \(B\), the midpoint, the planet still wins, and at \(A\) it wins by even more. To make the two pulls equal, the ship has to be closer to the less massive moon, which is position \(C\).</p>` },
+{ fig: FIG.q24, figTop: true,
+  text: R`Identical spheres are dropped from a height of 100 m above the surfaces of Planet X and Planet Y. The speed of the spheres as a function of time is recorded for each planet in the graph above. Which planet exerts the greater force of gravity on the sphere, and what evidence supports this conclusion?`,
+  opts: ['Planet X, because its line has the greater area under it.', 'Planet X, because its line has the greater slope.', 'Planet Y, because it falls for the smaller amount of time.', 'Planet Y, because the object’s final speed is greater.'], ans: ['B'],
+  exp: R`<p>The slope of a speed–time graph is acceleration, and \(F_g=mg\) with the same mass on both planets. Planet X’s line is steeper, so its acceleration, and therefore its gravitational force, is greater. The areas under both lines are equal (100 m each), so (A) can’t be the evidence.</p>` },
+{ text: R`A satellite of mass \(m\) and speed \(v\) moves in a stable, circular orbit around a planet of mass \(M\). What is the radius of the satellite’s orbit?`,
+  opts: [R`\(\dfrac{GM}{mv}\)`, R`\(\dfrac{Gv}{mM}\)`, R`\(\dfrac{GM}{v^2}\)`, R`\(\dfrac{GmM}{v}\)`, R`\(\dfrac{GmM}{v^2}\)`], ans: ['C'],
+  exp: R`<p>Gravity provides the centripetal force: \[\frac{GMm}{r^2}=\frac{mv^2}{r}\;\Rightarrow\;r=\frac{GM}{v^2}\] The satellite’s mass cancels.</p>` },
+{ fig: FIG.q26, figTop: true,
+  text: R`The figure shows three cases where two spheres are touching and attract each other with the gravitational force. The radii of the spheres in each case are shown. All of the spheres are made of material with the same density. Which of the following correctly ranks these cases based on the gravitational force between the spheres?`,
+  opts: [R`\((\text{A}=\text{B})>\text{C}\)`, R`\(\text{A}>\text{C}>\text{B}\)`, R`\(\text{B}>\text{C}>\text{A}\)`, R`\(\text{C}>(\text{A}=\text{B})\)`], ans: ['C'],
+  exp: R`<p>Same density means \(m\propto R^3\). Touching spheres have centers separated by the sum of their radii. Dropping the constants that every case shares: \[F_A\propto\frac{R^3\cdot R^3}{(2R)^2}=\tfrac14R^4\qquad F_B\propto\frac{(2R)^3(2R)^3}{(4R)^2}=4R^4\qquad F_C\propto\frac{(3R)^3\,R^3}{(4R)^2}=\tfrac{27}{16}R^4\]</p><p>So \(B>C>A\).</p>` },
+{ fig: FIG.q27, figTop: true,
+  text: R`An object is dropped from the top of a building near Earth’s surface. After 2 s, a second identical object is dropped from the same building from the same height. After 4 s, the first object strikes the ground. The graph shows the speeds \(v\) of both objects as a function of time \(t\). What is the approximate acceleration of the center of mass of the two-object system at the moment right before the first object reaches the ground?`,
+  opts: [R`\(0\ \text{m/s}^2\)`, R`\(5\ \text{m/s}^2\)`, R`\(10\ \text{m/s}^2\)`, R`\(20\ \text{m/s}^2\)`], ans: ['C'],
+  exp: R`<p>Just before the first object lands, both objects are still falling freely, each with acceleration of about \(10\ \text{m/s}^2\) (the lines are parallel). Two identical objects with the same acceleration give a center of mass with that same acceleration. Their different speeds don’t matter.</p>` },
+{ text: R`Two satellites are in circular orbits around Earth. Satellite 1 has mass \(m_0\) and an orbital radius of \(2R_E\), where \(R_E\) is the radius of Earth. Satellite 2 has mass \(2m_0\) and an orbital radius of \(3R_E\). Which of the following correctly compares the magnitude \(F\) of the force exerted by Earth on each satellite and the speed \(v\) of each satellite?`,
+  opts: [pair(R`Force: \(F_1>F_2\)`, R`Speed: \(v_1>v_2\)`), pair(R`Force: \(F_1>F_2\)`, R`Speed: \(v_2>v_1\)`), pair(R`Force: \(F_2>F_1\)`, R`Speed: \(v_1>v_2\)`), pair(R`Force: \(F_2>F_1\)`, R`Speed: \(v_2>v_1\)`)], ans: ['A'],
+  exp: R`<p>Force: \[F_1=\frac{GM_Em_0}{(2R_E)^2}=\frac{1}{4}\frac{GM_Em_0}{R_E^{\,2}},\qquad F_2=\frac{GM_E(2m_0)}{(3R_E)^2}=\frac{2}{9}\frac{GM_Em_0}{R_E^{\,2}}\] Since \(\tfrac14>\tfrac29\), \(F_1>F_2\). The extra mass of Satellite 2 doesn’t make up for its larger distance.</p><p>Speed: \(v=\sqrt{GM_E/r}\) doesn’t depend on the satellite’s mass, and the smaller orbit is faster, so \(v_1>v_2\).</p>` },
+{ text: R`Two experiments are performed on an object to determine how much the object resists a change in its state of motion while at rest and while in motion. In the first experiment, the object is pushed with a constant known force along a horizontal surface. There is negligible friction between the surface and the object. A motion sensor is used to measure the speed of the object as it is pushed. In a second experiment, the object is tied to a string and pulled upward with a constant known force, and a motion sensor is used to measure the speed of the object as it is pulled upward. The student uses the data collected from the motion sensor to determine the mass of the object in both experiments. Which of the following classifies the type of mass that was determined in each experiment?`,
+  opts: [pair('Experiment 1: gravitational mass', 'Experiment 2: gravitational mass'), pair('Experiment 1: inertial mass', 'Experiment 2: gravitational mass'), pair('Experiment 1: gravitational mass', 'Experiment 2: inertial mass'), pair('Experiment 1: inertial mass', 'Experiment 2: inertial mass')], ans: ['B'],
+  exp: R`<p>In Experiment 1, gravity plays no role in the horizontal motion: the known force and measured acceleration give \(m\) through \(F_{\text{net}}=ma\), which is inertial mass. In Experiment 2, the object’s weight \(F_g=mg\) is part of the net force, so the mass found depends on how strongly gravity acts on the object, which is gravitational mass.</p>` },
+{ text: R`A planet with half Earth’s mass and half Earth’s radius is discovered. What would an astronaut who weighs 800 N on Earth weigh on the planet?`,
+  opts: ['100 N', '200 N', '400 N', '800 N', '1600 N'], ans: ['E'],
+  exp: R`<p>Surface weight is proportional to \(M/R^2\), so the factor is \(\dfrac{1/2}{(1/2)^2}=\dfrac{1/2}{1/4}=2\). Twice 800 N is 1600 N. Halving the radius matters more than halving the mass because radius is squared.</p>` },
+{ fig: FIG.q31, figTop: true,
+  text: R`Objects 1 and 2 have masses \(M_1\) and \(M_2\), respectively, where \(M_1\lt M_2\). The objects are in outer space far away from any other objects, as shown above. Point \(P\) is located halfway between their centers. At what location, if any, is the gravitational field due to the two objects equal to zero?`,
+  opts: [R`Somewhere between object 1 and point \(P\)`, R`At point \(P\)`, R`Somewhere between point \(P\) and object 2`, 'The gravitational field due to the two objects is nonzero everywhere.'], ans: ['A'],
+  exp: R`<p>Between the objects, the two fields point in opposite directions, so they cancel where their magnitudes are equal. Field strength grows with mass and shrinks with the square of distance, so the smaller mass needs to be closer to match the larger one. That puts the zero point between object 1 and \(P\).</p>` }
+];
+
+/* ---------- app ---------- */
+const N = Q.length, L = 'ABCDE';
+const KEY = 'ap1-gravitation-2-6-quiz-v1';
+let state = { cur: 0, view: 'q', ans: {} };
+let draft = {}, confirming = false, confirmTimer = null, popIndex = -1, mjReady = false;
+try {
+  const s = JSON.parse(localStorage.getItem(KEY) || 'null');
+  if (s && s.ans && typeof s.ans === 'object') state = { cur: Math.min(Math.max(0, s.cur | 0), N - 1), view: s.view === 'results' ? 'results' : 'q', ans: s.ans };
+} catch (e) {}
+function save() { try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) {} }
+
+const side = document.getElementById('side'), main = document.getElementById('main');
+const statusOf = i => (state.ans[i] && state.ans[i].status) || 'none';
+const isDone = i => { const s = statusOf(i); return s === 'correct' || s === 'incorrect'; };
+const allDone = () => { for (let i = 0; i < N; i++) if (!isDone(i)) return false; return true; };
+function counts() { const c = { correct: 0, incorrect: 0, skipped: 0, none: 0 }; for (let i = 0; i < N; i++) c[statusOf(i)]++; return c; }
+function nextUnfinished(from) { for (let k = 1; k <= N; k++) { const j = (from + k) % N; if (!isDone(j)) return j; } return -1; }
+const letters = arr => arr.map(l => `(${l})`).join(' and ');
+
+function renderSide() {
+  const c = counts(), answered = c.correct + c.incorrect;
+  const pct = answered ? Math.round(100 * c.correct / answered) : 0;
+  const w = n => (100 * n / N).toFixed(3) + '%';
+  const glyph = { correct: '✓', incorrect: '✕', skipped: '–', none: '' };
+  const word = { correct: 'correct', incorrect: 'incorrect', skipped: 'skipped', none: 'not answered' };
+  let cells = '';
+  for (let i = 0; i < N; i++) {
+    const s = statusOf(i), cur = state.view === 'q' && i === state.cur;
+    cells += `<button class="cell ${s}${cur ? ' current' : ''}${i === popIndex ? ' pop' : ''}" data-act="jump" data-i="${i}" aria-label="Question ${i + 1}, ${word[s]}"${cur ? ' aria-current="step"' : ''}>${i + 1}${glyph[s] ? `<span class="gl" aria-hidden="true">${glyph[s]}</span>` : ''}</button>`;
+  }
+  popIndex = -1;
+  side.innerHTML = `
+    <h1>Gravitation practice</h1>
+    <p class="sub">AP Physics 1, Topic 2.6</p>
+    <section class="score" aria-label="Your progress">
+      <p class="big">${c.correct}<span class="d"> / ${N}</span></p>
+      <p class="cap">questions correct</p>
+      <p class="acc">${answered ? `${pct}% of the ${answered} you’ve answered` : 'Answer a question to start your score.'}</p>
+      <div class="bar" role="img" aria-label="${c.correct} correct, ${c.incorrect} incorrect, ${c.skipped} skipped, ${c.none} not answered">
+        <span class="seg-correct" style="width:${w(c.correct)}"></span><span class="seg-incorrect" style="width:${w(c.incorrect)}"></span><span class="seg-skipped" style="width:${w(c.skipped)}"></span>
+      </div>
+      <ul class="legend">
+        <li><i class="sw correct"></i>Correct <b>${c.correct}</b></li>
+        <li><i class="sw incorrect"></i>Incorrect <b>${c.incorrect}</b></li>
+        <li><i class="sw skipped"></i>Skipped <b>${c.skipped}</b></li>
+        <li><i class="sw none"></i>Not yet <b>${c.none}</b></li>
+      </ul>
+    </section>
+    <p class="navlabel">Jump to any question</p>
+    <nav class="navgrid" aria-label="Questions">${cells}</nav>
+    <div class="side-actions">
+      ${allDone() && state.view !== 'results' ? '<button class="btn primary" data-act="results">See results</button>' : ''}
+      <button class="btn reset${confirming ? ' confirm' : ''}" data-act="reset">${confirming ? 'Tap again to erase all answers' : 'Reset quiz'}</button>
+    </div>
+    <p class="keys">Keys: A–E to choose, Enter to check, ← → to move, S to skip.</p>`;
+}
+
+function optionHTML(q, i, sel, checked) {
+  const l = L[i], isSel = sel.includes(l), isAns = q.ans.includes(l);
+  let cls = 'opt', tag = '';
+  if (checked) {
+    if (isAns) { cls += ' right'; tag = '<span class="tag">Answer</span>'; }
+    else if (isSel) { cls += ' wrong'; tag = '<span class="tag">Your pick</span>'; }
+  } else if (isSel) cls += ' sel';
+  const role = q.multi ? `aria-pressed="${isSel}"` : `role="radio" aria-checked="${isSel}"`;
+  return `<button class="${cls}" data-act="opt" data-l="${l}" ${role}${checked ? ' disabled' : ''}><span class="key" aria-hidden="true">${l}</span><span class="otext"><span class="sr-only" style="position:absolute;left:-9999px">Choice ${l}. </span>${q.opts[i]}</span>${tag}</button>`;
+}
+
+function renderQuestion() {
+  const i = state.cur, q = Q[i], a = state.ans[i], checked = isDone(i);
+  const sel = checked ? (a.sel || []) : (draft[i] || []);
+  const ready = sel.length === q.ans.length;
+  const stateText = { correct: 'Answered correctly', incorrect: 'Answered incorrectly', skipped: 'Skipped earlier', none: 'Not answered yet' }[statusOf(i)];
+  const fig = q.fig ? `<div class="figwrap">${q.fig}</div>` : '';
+  let fb = '';
+  if (checked) {
+    const ok = a.status === 'correct';
+    fb = `<div class="fb ${ok ? 'ok' : 'no'}" role="status"><strong>${ok ? 'Correct.' : `Not quite. The answer is ${letters(q.ans)}.`}</strong>${q.exp}</div>`;
+  }
+  const nu = nextUnfinished(i);
+  const primary = checked
+    ? `<button class="btn primary" data-act="continue">${nu < 0 ? 'See results' : 'Next question'}</button>`
+    : `<button class="btn primary" data-act="check"${ready ? '' : ' disabled'}>Check answer</button>
+       <button class="btn quiet" data-act="skip">Skip for now</button>`;
+  return `
+    <div class="qhead"><h2 class="qnum" id="qh" tabindex="-1">Question ${i + 1} <span class="of">of ${N}</span></h2><span class="qstate">${stateText}</span></div>
+    ${q.figTop ? fig : ''}
+    <div class="prompt"><p>${q.text}</p></div>
+    ${q.figTop ? '' : fig}
+    ${q.multi ? '<p class="hint">Choose two.</p>' : ''}
+    <div class="opts${q.multi ? ' multi' : ''}" role="${q.multi ? 'group' : 'radiogroup'}" aria-labelledby="qh">${q.opts.map((_, k) => optionHTML(q, k, sel, checked)).join('')}</div>
+    ${fb}
+    <div class="actions">${primary}</div>
+    <div class="navrow">
+      <button class="btn quiet" data-act="prev"${i === 0 ? ' disabled' : ''}>Previous</button>
+      <button class="btn quiet" data-act="next">${i === N - 1 ? (allDone() ? 'See results' : 'Next unanswered') : 'Next'}</button>
+    </div>`;
+}
+
+function renderResults() {
+  const c = counts(), pct = Math.round(100 * c.correct / N);
+  const missed = []; for (let i = 0; i < N; i++) if (statusOf(i) === 'incorrect') missed.push(i);
+  const msg = pct >= 90 ? 'Strong work. You have a firm handle on gravitation.'
+    : pct >= 70 ? 'Solid. Read the explanations for the questions you missed, then retry them.'
+    : 'Go back through the questions you missed and read each explanation, then retry them.';
+  return `
+    <div class="results">
+      <h2 id="qh" tabindex="-1">You finished all ${N} questions</h2>
+      <p class="big">${c.correct}<span class="d"> / ${N}</span></p>
+      <p class="cap">${pct}% correct</p>
+      <p>${msg}</p>
+      ${missed.length ? `<h3>Questions to review</h3><div class="chips">${missed.map(i => `<button class="chip" data-act="jump" data-i="${i}">Question ${i + 1}</button>`).join('')}</div>` : ''}
+      <div class="actions">
+        ${missed.length ? `<button class="btn primary" data-act="retry">Retry the ${missed.length} I missed</button>` : ''}
+        <button class="btn" data-act="review">Review from question 1</button>
+        <button class="btn" data-act="restart">Start over</button>
+      </div>
+    </div>`;
+}
+
+function renderMain() {
+  if (mjReady && window.MathJax && MathJax.typesetClear) MathJax.typesetClear([main]);
+  if (state.view === 'results' && !allDone()) state.view = 'q';
+  main.innerHTML = state.view === 'results' ? renderResults() : renderQuestion();
+  if (mjReady && MathJax.typesetPromise) MathJax.typesetPromise([main]).catch(() => {});
+}
+function render() { renderSide(); renderMain(); }
+
+function focusMain() {
+  const h = document.getElementById('qh');
+  if (h) h.focus({ preventScroll: true });
+  const top = main.getBoundingClientRect().top;
+  if (top < 0 || top > window.innerHeight * 0.6) {
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    main.scrollIntoView({ block: 'start', behavior: reduce ? 'auto' : 'smooth' });
+  }
+}
+function go(i) { state.view = 'q'; state.cur = i; save(); render(); focusMain(); }
+function showResults() { state.view = 'results'; save(); render(); focusMain(); }
+
+function choose(l) {
+  const i = state.cur, q = Q[i];
+  if (state.view !== 'q' || isDone(i) || L.indexOf(l) >= q.opts.length) return;
+  let d = draft[i] || [];
+  if (q.multi) d = d.includes(l) ? d.filter(x => x !== l) : (d.length < q.ans.length ? [...d, l] : [...d.slice(1), l]);
+  else d = [l];
+  draft[i] = d;
+  main.querySelectorAll('.opt').forEach(b => {
+    const on = d.includes(b.dataset.l);
+    b.classList.toggle('sel', on);
+    b.setAttribute(q.multi ? 'aria-pressed' : 'aria-checked', String(on));
+  });
+  const ck = main.querySelector('[data-act="check"]');
+  if (ck) ck.disabled = d.length !== q.ans.length;
+}
+function check() {
+  const i = state.cur, q = Q[i], d = draft[i] || [];
+  if (isDone(i) || d.length !== q.ans.length) return;
+  const ok = [...d].sort().join() === [...q.ans].sort().join();
+  state.ans[i] = { status: ok ? 'correct' : 'incorrect', sel: d };
+  delete draft[i];
+  popIndex = i; save(); render();
+  const fb = main.querySelector('.fb');
+  if (fb && fb.getBoundingClientRect().bottom > window.innerHeight) {
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    fb.scrollIntoView({ block: 'nearest', behavior: reduce ? 'auto' : 'smooth' });
+  }
+}
+function skip() {
+  const i = state.cur;
+  if (!isDone(i)) { state.ans[i] = { status: 'skipped' }; popIndex = i; }
+  const n = nextUnfinished(i);
+  if (n < 0) showResults(); else go(n);
+}
+function next() {
+  const i = state.cur;
+  if (i < N - 1) return go(i + 1);
+  if (allDone()) return showResults();
+  go(nextUnfinished(i));
+}
+function resetAll() {
+  state = { cur: 0, view: 'q', ans: {} }; draft = {}; confirming = false; clearTimeout(confirmTimer);
+  save(); render(); focusMain();
+}
+
+document.addEventListener('click', e => {
+  const b = e.target.closest('[data-act]'); if (!b) return;
+  const act = b.dataset.act;
+  if (act === 'opt') choose(b.dataset.l);
+  else if (act === 'check') check();
+  else if (act === 'skip') skip();
+  else if (act === 'prev') { if (state.cur > 0) go(state.cur - 1); }
+  else if (act === 'next') next();
+  else if (act === 'continue') { const n = nextUnfinished(state.cur); n < 0 ? showResults() : go(n); }
+  else if (act === 'jump') go(+b.dataset.i);
+  else if (act === 'results') showResults();
+  else if (act === 'review') go(0);
+  else if (act === 'restart') resetAll();
+  else if (act === 'retry') {
+    let first = -1;
+    for (let i = 0; i < N; i++) if (statusOf(i) === 'incorrect') { delete state.ans[i]; if (first < 0) first = i; }
+    go(first < 0 ? 0 : first);
+  }
+  else if (act === 'reset') {
+    if (!confirming) {
+      confirming = true; renderSide();
+      clearTimeout(confirmTimer);
+      confirmTimer = setTimeout(() => { confirming = false; renderSide(); }, 4000);
+      const rb = side.querySelector('[data-act="reset"]'); if (rb) rb.focus();
+    } else resetAll();
+  }
+});
+
+document.addEventListener('keydown', e => {
+  if (e.metaKey || e.ctrlKey || e.altKey || state.view !== 'q') return;
+  const k = e.key;
+  if (/^[a-eA-E]$/.test(k)) { choose(k.toUpperCase()); return; }
+  if (/^[1-5]$/.test(k)) { choose(L[+k - 1]); return; }
+  if (k === 'Enter') {
+    if (e.target.closest && e.target.closest('button')) return;
+    e.preventDefault();
+    if (isDone(state.cur)) { const n = nextUnfinished(state.cur); n < 0 ? showResults() : go(n); } else check();
+  }
+  else if (k === 'ArrowRight') { e.preventDefault(); next(); }
+  else if (k === 'ArrowLeft') { e.preventDefault(); if (state.cur > 0) go(state.cur - 1); }
+  else if (k === 's' || k === 'S') skip();
+});
+
+function reveal() { main.classList.remove('pending'); }
+window.__mjReady = () => { mjReady = true; MathJax.typesetPromise([main]).catch(() => {}).finally(reveal); };
+setTimeout(reveal, 3500);
+render();
+</script>
+</body>
+</html>
