@@ -1,39 +1,158 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Physics Practice Quizzes</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>AP Physics 1 Practice</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&display=swap" rel="stylesheet">
 <style>
-  :root{--bg:#f5f6f8;--card:#fff;--ink:#1c2230;--muted:#5d6678;--line:#dfe3ea;--accent:#2f5bd3;--accent-soft:#e8eefc}
-  *{box-sizing:border-box}
-  body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.55 Inter,system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
-  main{max-width:720px;margin:0 auto;padding:40px 20px 60px}
-  h1{font-size:26px;margin:0 0 4px;letter-spacing:-.01em}
-  .sub{color:var(--muted);margin:0 0 28px}
-  .quiz{display:flex;align-items:center;gap:16px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:18px 20px;margin-bottom:12px;text-decoration:none;color:inherit;transition:border-color .15s,box-shadow .15s}
-  .quiz:hover{border-color:#9fb2e8;box-shadow:0 4px 14px rgba(47,91,211,.08)}
-  .quiz:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
-  .num{flex:0 0 auto;background:var(--accent-soft);color:var(--accent);font-weight:700;border-radius:10px;padding:8px 12px;font-size:15px}
-  .info{flex:1;min-width:0}
-  .info b{display:block;font-size:17px}
-  .info span{color:var(--muted);font-size:14px}
-  .go{color:var(--accent);font-weight:600;white-space:nowrap}
+  :root {
+    --bg: #eef3f8;
+    --ink: #13233a;
+    --muted: #4c5d74;
+    --panel: #ffffff;
+    --line: #c9d5e3;
+    --grav: #2f5fd0;
+    --circ: #c2410c;
+    --focus: #f5b301;
+    color-scheme: light;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #0f1a2b;
+      --ink: #e6edf6;
+      --muted: #a3b2c6;
+      --panel: #17253b;
+      --line: #2c3f5a;
+      --grav: #7ea2ff;
+      --circ: #ff9a5c;
+      color-scheme: dark;
+    }
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; }
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: "Atkinson Hyperlegible", system-ui, -apple-system, "Segoe UI", sans-serif;
+    font-size: 1.125rem;
+    line-height: 1.5;
+    min-height: 100vh;
+    padding: max(2rem, env(safe-area-inset-top)) 1.25rem max(2rem, env(safe-area-inset-bottom));
+  }
+  main { max-width: 56rem; margin: 0 auto; }
+  header { margin: 1rem 0 2.5rem; }
+  h1 {
+    font-family: "Bricolage Grotesque", "Atkinson Hyperlegible", system-ui, sans-serif;
+    font-weight: 800;
+    font-size: clamp(2.25rem, 6vw, 3.75rem);
+    line-height: 1.02;
+    letter-spacing: -0.02em;
+    margin: 0 0 0.75rem;
+  }
+  header p { margin: 0; color: var(--muted); max-width: 36rem; }
+
+  .choices {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(17rem, 1fr));
+    gap: 1.5rem;
+  }
+  .choice {
+    --accent: var(--grav);
+    display: flex;
+    flex-direction: column;
+    text-decoration: none;
+    color: inherit;
+    background: var(--panel);
+    border: 2px solid var(--line);
+    border-radius: 18px;
+    overflow: hidden;
+    transition: border-color .15s, transform .15s;
+  }
+  .choice.circ { --accent: var(--circ); }
+  .choice:hover { border-color: var(--accent); transform: translateY(-3px); }
+  .choice:focus-visible { outline: 4px solid var(--focus); outline-offset: 3px; }
+  .art {
+    background: color-mix(in srgb, var(--accent) 10%, var(--panel));
+    border-bottom: 2px solid var(--line);
+    display: grid; place-items: center;
+    padding: 1.25rem;
+  }
+  .art svg { width: 100%; max-width: 240px; height: auto; }
+  .body { padding: 1.25rem 1.5rem 1.5rem; display: flex; flex-direction: column; gap: .5rem; flex: 1; }
+  .topic { color: var(--accent); font-weight: 700; font-size: 1rem; }
+  h2 {
+    font-family: "Bricolage Grotesque", "Atkinson Hyperlegible", system-ui, sans-serif;
+    font-weight: 600; font-size: 1.75rem; line-height: 1.1; margin: 0;
+  }
+  .body p { margin: 0; color: var(--muted); }
+  .go {
+    margin-top: auto; padding-top: 1rem;
+    font-weight: 700; color: var(--accent);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .choice { transition: none; }
+    .choice:hover { transform: none; }
+    .orbit { animation: none !important; }
+  }
+  .orbit { transform-origin: 120px 80px; animation: spin 6s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
 </style>
 </head>
 <body>
 <main>
-  <h1>Physics Practice Quizzes</h1>
-  <p class="sub">Choose a quiz to study. You can reset each quiz and practice as many times as you like.</p>
+  <header>
+    <h1>AP Physics 1 Practice</h1>
+    <p>Pick a topic to start. Each practice set opens in this tab, so use your browser’s back button to return here.</p>
+  </header>
 
-  <a class="quiz" href="circular-motion-2-9.html">
-    <span class="num">2.9</span>
-    <span class="info"><b>Circular Motion: MCQ Practice</b><span>AP Physics 1 · 22 questions</span></span>
-    <span class="go">Start →</span>
-  </a>
+  <div class="choices">
+    <a class="choice" href="Gravitation%20practice%20Topic%202-6.html">
+      <div class="art" aria-hidden="true">
+        <svg viewBox="0 0 240 160">
+          <circle cx="62" cy="80" r="30" fill="var(--grav)" opacity=".9"/>
+          <circle cx="182" cy="80" r="16" fill="var(--grav)" opacity=".55"/>
+          <line x1="94" y1="80" x2="112" y2="80" stroke="var(--ink)" stroke-width="4" stroke-linecap="round"/>
+          <path d="M110 73 L124 80 L110 87 Z" fill="var(--ink)"/>
+          <line x1="164" y1="80" x2="146" y2="80" stroke="var(--ink)" stroke-width="4" stroke-linecap="round"/>
+          <path d="M148 73 L134 80 L148 87 Z" fill="var(--ink)"/>
+          <text x="62" y="134" text-anchor="middle" font-size="16" font-family="Atkinson Hyperlegible, sans-serif" fill="var(--ink)">m₁</text>
+          <text x="182" y="134" text-anchor="middle" font-size="16" font-family="Atkinson Hyperlegible, sans-serif" fill="var(--ink)">m₂</text>
+          <text x="120" y="40" text-anchor="middle" font-size="18" font-style="italic" font-family="Georgia, serif" fill="var(--ink)">F = Gm₁m₂ / r²</text>
+        </svg>
+      </div>
+      <div class="body">
+        <span class="topic">Topic 2.6</span>
+        <h2>Gravitational Force</h2>
+        <p>Inverse-square relationships, gravitational fields, free fall, and Newton’s third law for gravity.</p>
+        <span class="go">Start gravitation practice</span>
+      </div>
+    </a>
+
+    <a class="choice circ" href="circular-motion-2-9.html">
+      <div class="art" aria-hidden="true">
+        <svg viewBox="0 0 240 160">
+          <circle cx="120" cy="80" r="56" fill="none" stroke="var(--circ)" stroke-width="3" stroke-dasharray="6 6" opacity=".7"/>
+          <circle cx="120" cy="80" r="4" fill="var(--ink)"/>
+          <g class="orbit">
+            <circle cx="176" cy="80" r="11" fill="var(--circ)"/>
+            <line x1="176" y1="80" x2="176" y2="34" stroke="var(--ink)" stroke-width="3.5" stroke-linecap="round"/>
+            <path d="M169 38 L176 24 L183 38 Z" fill="var(--ink)"/>
+            <line x1="164" y1="80" x2="140" y2="80" stroke="var(--circ)" stroke-width="3.5" stroke-linecap="round"/>
+            <path d="M142 73 L130 80 L142 87 Z" fill="var(--circ)"/>
+          </g>
+        </svg>
+      </div>
+      <div class="body">
+        <span class="topic">Topic 2.9</span>
+        <h2>Circular Motion</h2>
+        <p>Centripetal acceleration, net force toward the center, and objects moving in circles.</p>
+        <span class="go">Start circular motion practice</span>
+      </div>
+    </a>
+  </div>
 </main>
 </body>
 </html>
