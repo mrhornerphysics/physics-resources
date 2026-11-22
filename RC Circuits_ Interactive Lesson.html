@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>RC Circuits: Interactive Lesson</title>
+<style>
+:root{--bg:#f4f6f9;--card:#ffffff;--ink:#1b2430;--muted:#4a5868;--line:#d3dae3;--accent:#1f5fbf;--accent-ink:#ffffff;
+--vc:#1f5fbf;--vr:#c2410c;--itot:#15803d;--ir2:#7e22ce;--ic:#b45309;--note:#fff6dc;--ok:#e3f5e9;--bad:#fdeaea;--wire:#2b3643;--plate:#1b2430}
+@media (prefers-color-scheme:dark){:root{--bg:#0f141b;--card:#18202a;--ink:#e9eef4;--muted:#aab7c6;--line:#2d3a49;--accent:#6aa5ff;--accent-ink:#0b1320;
+--vc:#6aa5ff;--vr:#ff9a5c;--itot:#4ade80;--ir2:#c58bff;--ic:#fbbf24;--note:#3a3217;--ok:#12301f;--bad:#3b1c1c;--wire:#cfd8e3;--plate:#e9eef4}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.55 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+header,main{max-width:1100px;margin:0 auto;padding:0 16px}
+header{padding-top:24px}
+h1{font-size:1.7rem;margin:0 0 6px}
+h2{font-size:1.25rem;margin:0 0 10px}
+h3{font-size:1.05rem;margin:14px 0 6px}
+.lede{color:var(--muted);margin:0 0 16px;max-width:75ch}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:18px;margin:0 0 18px}
+.grid2{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);gap:18px}
+@media (max-width:820px){.grid2{grid-template-columns:1fr}}
+button{font:inherit;cursor:pointer;border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:8px;padding:8px 12px;min-height:40px}
+button:hover{border-color:var(--accent)}
+button:focus-visible,input:focus-visible,summary:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+button[aria-pressed="true"],button[aria-current="true"]{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.tour{margin-bottom:12px}
+.tourtext{background:var(--note);border-radius:8px;padding:10px 14px;margin:10px 0 14px;min-height:5.5em}
+.tourtext p{margin:4px 0}
+details{margin:6px 0}
+summary{cursor:pointer;font-weight:600}
+svg#ckt{width:100%;height:auto;background:var(--card);border:1px solid var(--line);border-radius:8px}
+svg text{fill:var(--ink);font:14px system-ui,sans-serif}
+.ctl{display:grid;grid-template-columns:1fr auto;gap:2px 8px;margin-bottom:10px;align-items:center}
+.ctl label{font-weight:600}
+.ctl output{font-variant-numeric:tabular-nums;color:var(--muted)}
+.ctl input[type=range]{grid-column:1/3;width:100%}
+.readouts{display:grid;grid-template-columns:repeat(auto-fit,minmax(135px,1fr));gap:10px;margin:14px 0}
+.ro{border:1px solid var(--line);border-radius:8px;padding:8px 10px}
+.ro span{display:block;color:var(--muted);font-size:.85rem}
+.ro b{font-size:1.2rem;font-variant-numeric:tabular-nums}
+.status{border-left:5px solid var(--accent);background:var(--bg);padding:8px 12px;border-radius:4px;margin-bottom:12px}
+.legend{display:flex;flex-wrap:wrap;gap:14px;font-size:.9rem;margin:8px 0 2px}
+.legend i{display:inline-block;width:26px;height:0;border-top:4px solid;vertical-align:middle;margin-right:5px}
+canvas{width:100%;height:220px;display:block;border:1px solid var(--line);border-radius:8px;background:var(--card)}
+.eq{background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:8px 14px;margin:8px 0;font-family:Georgia,"Times New Roman",serif;font-size:1.08rem;overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:.95rem}
+th,td{border:1px solid var(--line);padding:6px 8px;text-align:left;vertical-align:top}
+th{background:var(--bg)}
+.tablewrap{overflow-x:auto}
+.q{border-top:1px solid var(--line);padding:12px 0}
+.q:first-of-type{border-top:0}
+.opts{display:grid;gap:6px;margin-top:6px}
+.opts button{text-align:left}
+.opts button.right{background:var(--ok);border-color:#2a9d57;color:var(--ink)}
+.opts button.wrong{background:var(--bad);border-color:#d04444;color:var(--ink)}
+.fb{margin-top:6px;padding:8px 12px;border-radius:8px;background:var(--bg)}
+.chal label{display:block;margin:8px 0 2px;font-weight:600}
+.chal input{font:inherit;padding:6px 8px;width:11em;border:1px solid var(--line);border-radius:6px;background:var(--card);color:var(--ink)}
+.mark{margin-left:8px}
+.sub{color:var(--muted);font-size:.9rem}
+</style>
+</head>
+<body>
+<header>
+<h1>RC Circuits: charging, steady state, and opening the switch</h1>
+<p class="lede">A capacitor behaves differently at different moments: like a wire when it is empty, like a gap when it is full, and like a battery when it is charged and the source is removed. Use the lab below to see the total current and every potential difference as time passes. Predict first, then check.</p>
+</header>
+<main>
+
+<section class="card" id="lab" aria-labelledby="h-lab">
+<h2 id="h-lab">1 · Circuit lab</h2>
+<div class="tour">
+<div class="row" role="group" aria-label="Guided scenarios" id="tourBtns"></div>
+<div class="tourtext" id="tourText" aria-live="polite"><p><b>Start here:</b> pick a scenario above. Each one sets up the circuit, then pauses so you can predict before you read the numbers. Or ignore them and play with the sliders.</p></div>
+</div>
+
+<div class="grid2">
+<div>
+<svg id="ckt" viewBox="0 0 620 300" role="img" aria-label="RC circuit diagram: battery, switch, resistor R1, and a capacitor with an optional parallel resistor R2">
+<g id="wires" stroke="var(--wire)" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round">
+<path d="M70 60V145M70 165V260H480"/>
+<path d="M70 60H110M170 60H210M310 60H480V140M480 180V260"/>
+<polyline points="210,60 222,60 230,44 242,76 254,44 266,76 278,44 290,76 298,60 310,60"/>
+<g id="r2grp">
+<path d="M380 60V115M380 205V260"/>
+<polyline points="380,115 380,124 366,132 394,146 366,160 394,174 380,184 380,205"/>
+</g>
+</g>
+<g stroke="var(--plate)" stroke-width="4" stroke-linecap="round">
+<line x1="52" y1="145" x2="88" y2="145"/><line x1="60" y1="165" x2="80" y2="165"/>
+<line x1="455" y1="140" x2="505" y2="140"/><line x1="455" y1="180" x2="505" y2="180"/>
+</g>
+<rect id="gap" x="456" y="142" width="48" height="36" fill="var(--vc)" opacity="0"/>
+<g id="signs" font-weight="700"></g>
+<circle cx="380" cy="60" r="4" fill="var(--wire)"/><circle cx="380" cy="260" r="4" fill="var(--wire)"/>
+<g id="blade"><circle cx="110" cy="60" r="5" fill="var(--wire)"/><line x1="110" y1="60" x2="170" y2="60" stroke="var(--wire)" stroke-width="4" stroke-linecap="round"/></g>
+<circle cx="170" cy="60" r="4" fill="var(--wire)"/>
+<g id="dots"></g>
+<text x="24" y="120">+</text><text x="24" y="190">−</text>
+<text x="12" y="158" id="tEps">ε</text>
+<text x="220" y="30" id="tR1">R₁</text>
+<text x="400" y="232" id="tR2" font-size="13">R₂</text>
+<text x="512" y="162" id="tC">C</text>
+<text x="118" y="96" id="tI" fill="var(--itot)" style="fill:var(--itot);font-weight:600">I</text>
+<text x="206" y="104" id="tVr" style="fill:var(--vr);font-weight:600">V</text>
+<text x="512" y="128" id="tVc" style="fill:var(--vc);font-weight:600">V</text>
+<text x="400" y="272" id="tI2" style="fill:var(--ir2);font-weight:600" font-size="13"></text>
+<text x="496" y="222" id="tIc" style="fill:var(--ic);font-weight:600" font-size="13"></text>
+</svg>
+<div class="row" style="margin-top:10px">
+<span><b>Switch:</b></span>
+<button id="swClosed" aria-pressed="true">Closed</button>
+<button id="swOpen" aria-pressed="false">Open</button>
+<span style="width:10px"></span>
+<button id="playBtn">Pause</button>
+<button id="resetBtn" title="Empty the capacitor and clear the graphs">Reset (uncharge C)</button>
+</div>
+<p class="sub" style="margin:8px 0 0">Moving dots show conventional current. Dot speed is proportional to current; plate signs show stored charge.</p>
+</div>
+
+<div>
+<div class="ctl"><label for="sEps">Battery ε</label><output id="oEps"></output><input type="range" id="sEps" min="1" max="24" step="1" value="12"></div>
+<div class="ctl"><label for="sR1">Resistor R₁</label><output id="oR1"></output><input type="range" id="sR1" min="1" max="100" step="1" value="10"></div>
+<div class="ctl"><label for="sC">Capacitor C</label><output id="oC"></output><input type="range" id="sC" min="10" max="1000" step="10" value="100"></div>
+<div class="ctl" style="margin-bottom:2px"><label><input type="checkbox" id="useR2"> Add parallel resistor R₂ across C</label><span></span></div>
+<div class="ctl"><label for="sR2">Resistor R₂</label><output id="oR2"></output><input type="range" id="sR2" min="1" max="100" step="1" value="20"></div>
+<div class="ctl"><label for="sSpeed">Playback speed</label><output id="oSpeed"></output><input type="range" id="sSpeed" min="0.25" max="8" step="0.25" value="1"></div>
+</div>
+</div>
+
+<div class="readouts" id="readouts">
+<div class="ro"><span>Total current I (from battery)</span><b id="roI"></b></div>
+<div class="ro"><span>Current through R₂</span><b id="roI2"></b></div>
+<div class="ro"><span>Current into capacitor I<sub>C</sub></span><b id="roIc"></b></div>
+<div class="ro"><span>Voltage across R₁</span><b id="roVr"></b></div>
+<div class="ro"><span>Capacitor voltage V<sub>C</sub></span><b id="roVc"></b></div>
+<div class="ro"><span>Charge q = CV<sub>C</sub></span><b id="roQ"></b></div>
+<div class="ro"><span>Stored energy ½CV²</span><b id="roU"></b></div>
+<div class="ro"><span>Time constant now, τ</span><b id="roTau"></b></div>
+<div class="ro"><span>Time t</span><b id="roT"></b></div>
+</div>
+<div class="status" id="status"></div>
+
+<div class="legend" aria-hidden="true"><span><i style="border-color:var(--vc)"></i>V<sub>C</sub></span><span><i style="border-color:var(--vr);border-top-style:dashed"></i>V across R₁</span><span><i style="border-color:var(--wire);border-top-style:dotted"></i>ε</span></div>
+<canvas id="gV" role="img" aria-label="Graph of capacitor voltage and resistor voltage versus time"></canvas>
+<div class="legend" aria-hidden="true"><span><i style="border-color:var(--itot)"></i>Total current I</span><span><i style="border-color:var(--ir2);border-top-style:dashed"></i>I through R₂</span><span><i style="border-color:var(--ic);border-top-style:dotted"></i>I into capacitor</span></div>
+<canvas id="gI" role="img" aria-label="Graph of total current, R2 current, and capacitor current versus time"></canvas>
+</section>
+
+<section class="card" aria-labelledby="h-phys">
+<h2 id="h-phys">2 · The physics in four moves</h2>
+<h3>Move 1: the capacitor rule</h3>
+<div class="eq">V<sub>C</sub> = q / C &nbsp;&nbsp;&nbsp; I<sub>C</sub> = dq/dt</div>
+<p>The voltage across a capacitor cannot jump, because that would need infinite current. So at the instant something changes, V<sub>C</sub> is whatever it was just before. An empty capacitor (V<sub>C</sub> = 0) acts like a <b>wire</b> at that instant. After a long time the current dies out and it acts like a <b>gap</b> (open circuit).</p>
+
+<h3>Move 2: series RC, switch closed (Kirchhoff loop rule)</h3>
+<div class="eq">ε − IR − q/C = 0, &nbsp; I = dq/dt &nbsp;⟹&nbsp; q(t) = Cε(1 − e<sup>−t/τ</sup>), &nbsp; τ = RC</div>
+<div class="eq">I(t) = (ε/R) e<sup>−t/τ</sup> &nbsp;&nbsp; V<sub>R</sub>(t) = ε e<sup>−t/τ</sup> &nbsp;&nbsp; V<sub>C</sub>(t) = ε (1 − e<sup>−t/τ</sup>)</div>
+<p>Check the limits: t = 0 gives I = ε/R and V<sub>C</sub> = 0. As t → ∞, I → 0 and V<sub>C</sub> → ε.</p>
+
+<h3>Move 3: add a resistor R₂ in parallel with C (the "total current" version)</h3>
+<p>R₁ is in series with the parallel pair (R₂ ∥ C). R₂ and C share the same voltage V<sub>C</sub>, and the total current splits at the junction:</p>
+<div class="eq">I<sub>total</sub> = (ε − V<sub>C</sub>)/R₁ = V<sub>C</sub>/R₂ + C dV<sub>C</sub>/dt</div>
+<p>This is a series RC circuit whose battery is replaced by its Thevenin equivalent:</p>
+<div class="eq">V<sub>∞</sub> = ε R₂/(R₁+R₂) &nbsp;&nbsp; R<sub>th</sub> = R₁R₂/(R₁+R₂) &nbsp;&nbsp; τ = R<sub>th</sub>C &nbsp;&nbsp; V<sub>C</sub>(t) = V<sub>∞</sub>(1 − e<sup>−t/τ</sup>)</div>
+<div class="eq">t = 0⁺: I<sub>total</sub> = ε/R₁ (C shorts R₂) &nbsp;&nbsp;→&nbsp;&nbsp; t → ∞: I<sub>total</sub> = ε/(R₁+R₂)</div>
+
+<h3>Move 4: open the switch</h3>
+<p>With no R₂, the charge has nowhere to go, so V<sub>C</sub> stays put (an ideal capacitor). With R₂, the capacitor discharges through it:</p>
+<div class="eq">V<sub>C</sub>(t) = V₀ e<sup>−t/(R₂C)</sup> &nbsp;&nbsp; I<sub>R₂</sub> = V<sub>C</sub>/R₂ &nbsp;&nbsp; I<sub>total</sub> = 0</div>
+<p>Notice the capacitor current <i>reverses</i> (I<sub>C</sub> goes negative). It is now the source.</p>
+
+<details><summary>Energy bookkeeping (series RC)</summary>
+<p>The battery supplies Cε² in total, since ∫ε I dt = ε·q<sub>final</sub> = Cε². The capacitor stores only ½Cε². The other ½Cε² is dissipated as heat in R, no matter what R is. Check this with the lab: the stored-energy readout levels off at half of what the battery has delivered.</p></details>
+
+<h3>How fast is "fast"?</h3>
+<div class="tablewrap"><table>
+<tr><th>t</th><th>0</th><th>1τ</th><th>2τ</th><th>3τ</th><th>5τ</th></tr>
+<tr><th>Charge reached (of final)</th><td>0%</td><td>63.2%</td><td>86.5%</td><td>95.0%</td><td>99.3%</td></tr>
+<tr><th>Current remaining (of initial)</th><td>100%</td><td>36.8%</td><td>13.5%</td><td>5.0%</td><td>0.7%</td></tr>
+</table></div>
+</section>
+
+<section class="card" aria-labelledby="h-cheat">
+<h2 id="h-cheat">3 · Limiting cases cheat sheet</h2>
+<div class="tablewrap"><table>
+<tr><th>Situation</th><th>Total current</th><th>V<sub>C</sub></th><th>Capacitor acts like</th></tr>
+<tr><td>Series RC, switch just closed (empty C)</td><td>ε/R</td><td>0</td><td>a wire</td></tr>
+<tr><td>Series RC, closed a long time</td><td>0</td><td>ε</td><td>a gap (open circuit)</td></tr>
+<tr><td>Series RC, opened after charging</td><td>0</td><td>ε, and it stays</td><td>a charged, isolated object</td></tr>
+<tr><td>R₁ + (R₂ ∥ C), just closed (empty C)</td><td>ε/R₁</td><td>0</td><td>a wire (shorts R₂)</td></tr>
+<tr><td>R₁ + (R₂ ∥ C), closed a long time</td><td>ε/(R₁+R₂)</td><td>εR₂/(R₁+R₂)</td><td>a gap</td></tr>
+<tr><td>R₁ + (R₂ ∥ C), opened after steady state</td><td>0 from battery; V<sub>C</sub>/R₂ through R₂, decaying</td><td>decays to 0 with τ = R₂C</td><td>a battery that is running down</td></tr>
+<tr><td>R₁ + (R₂ ∥ C), opened a long time</td><td>0</td><td>0</td><td>an empty capacitor</td></tr>
+</table></div>
+</section>
+
+<section class="card" aria-labelledby="h-quiz">
+<h2 id="h-quiz">4 · Check yourself</h2>
+<p class="sub" id="score">Answer each question; you can click other choices to see why they fail.</p>
+<div id="quiz"></div>
+</section>
+
+<section class="card chal" aria-labelledby="h-chal">
+<h2 id="h-chal">5 · Try a new problem</h2>
+<p id="chalText"></p>
+<div id="chalFields"></div>
+<div class="row" style="margin-top:12px"><button id="chalCheck">Check my answers</button><button id="chalNew">New numbers</button><button id="chalLab">Load these values into the lab</button></div>
+<div class="fb" id="chalFb" hidden></div>
+</section>
+</main>
+
+<script>
+"use strict";
+const $=id=>document.getElementById(id);
+const S={eps:12,R1:10e3,C:100e-6,R2:20e3,useR2:false,closed:true,V:0,t:0,playing:true,speed:1};
+const hist=[],events=[];
+
+/* ---------- physics ---------- */
+function tauChg(){return (S.useR2?S.R1*S.R2/(S.R1+S.R2):S.R1)*S.C}
+function tauInfo(){
+  if(S.closed) return {tau:tauChg(),Vinf:S.useR2?S.eps*S.R2/(S.R1+S.R2):S.eps};
+  return S.useR2?{tau:S.R2*S.C,Vinf:0}:{tau:Infinity,Vinf:S.V};
+}
+function currents(){
+  const Vc=S.V;let I=0,I2=S.useR2?Vc/S.R2:0,Ic;
+  if(S.closed){I=(S.eps-Vc)/S.R1;Ic=I-I2}else{Ic=-I2}
+  return {I,I2,Ic,Vr:S.closed?I*S.R1:0};
+}
+function pushHist(){
+  const c=currents();hist.push({t:S.t,Vc:S.V,Vr:c.Vr,I:c.I,I2:c.I2,Ic:c.Ic});
+  if(hist.length>8000)hist.splice(0,2000);
+}
+function advance(dt){
+  const {tau,Vinf}=tauInfo();
+  if(isFinite(tau)&&tau>0)S.V=Vinf+(S.V-Vinf)*Math.exp(-dt/tau);
+  S.t+=dt;pushHist();
+}
+function ff(T){const n=400;for(let i=0;i<n;i++)advance(T/n)}
+function resetSim(){S.V=0;S.t=0;hist.length=0;events.length=0;pushHist()}
+function windowW(){return 8*Math.max(tauChg(),S.useR2?S.R2*S.C:0)}
+function setSwitch(c){
+  if(S.closed!==c){S.closed=c;events.push({t:S.t,label:c?"closed":"opened"})}
+  $("swClosed").setAttribute("aria-pressed",c);$("swOpen").setAttribute("aria-pressed",!c);
+  $("blade").style.transform=c?"rotate(0deg)":"rotate(-28deg)";
+}
+
+/* ---------- formatting ---------- */
+const z=x=>Math.abs(x)<5e-9?0:x;
+const mA=x=>z(x*1e3).toFixed(2)+" mA";
+const Vf=x=>z(x).toFixed(2)+" V";
+const sec=x=>(x>=100?x.toFixed(0):x>=10?x.toFixed(1):x.toFixed(2))+" s";
+const kO=x=>(x/1e3).toFixed(0)+" kΩ";
+const uF=x=>(x*1e6).toFixed(0)+" µF";
+
+/* ---------- circuit drawing ---------- */
+const segs=[
+ {key:"I",pts:[[70,145],[70,60],[380,60]],col:"var(--itot)"},
+ {key:"I",pts:[[380,260],[70,260],[70,165]],col:"var(--itot)"},
+ {key:"I2",pts:[[380,60],[380,260]],col:"var(--ir2)"},
+ {key:"Ic",pts:[[380,60],[480,60],[480,140]],col:"var(--ic)"},
+ {key:"Ic",pts:[[480,180],[480,260],[380,260]],col:"var(--ic)"}
+];
+const NS="http://www.w3.org/2000/svg";
+segs.forEach(s=>{
+  s.cum=[0];for(let i=1;i<s.pts.length;i++){const a=s.pts[i-1],b=s.pts[i];s.cum.push(s.cum[i-1]+Math.hypot(b[0]-a[0],b[1]-a[1]))}
+  s.L=s.cum[s.cum.length-1];s.n=Math.max(2,Math.floor(s.L/26));s.phase=0;s.el=[];
+  for(let k=0;k<s.n;k++){const c=document.createElementNS(NS,"circle");c.setAttribute("r","4.5");c.style.fill=s.col;c.setAttribute("stroke","var(--card)");c.setAttribute("stroke-width","1");$("dots").appendChild(c);s.el.push(c)}
+});
+function pointAt(s,d){
+  d=((d%s.L)+s.L)%s.L;let i=1;while(i<s.cum.length-1&&d>s.cum[i])i++;
+  const a=s.pts[i-1],b=s.pts[i],f=(d-s.cum[i-1])/(s.cum[i]-s.cum[i-1]);
+  return [a[0]+(b[0]-a[0])*f,a[1]+(b[1]-a[1])*f];
+}
+const signsG=$("signs"),plus=[],minus=[];
+for(let i=0;i<6;i++){
+  const p=document.createElementNS(NS,"text");p.textContent="+";p.setAttribute("x",459+i*8.5);p.setAttribute("y",157);p.style.fill="var(--vr)";p.setAttribute("font-size","14");signsG.appendChild(p);plus.push(p);
+  const m=document.createElementNS(NS,"text");m.textContent="−";m.setAttribute("x",459+i*8.5);m.setAttribute("y",173);m.style.fill="var(--vc)";m.setAttribute("font-size","14");signsG.appendChild(m);minus.push(m);
+}
+function renderCircuit(dt){
+  const c=currents();
+  const Iref=Math.max(S.eps/S.R1,S.useR2?S.eps/S.R2:0)||1;
+  const val={I:c.I,I2:S.useR2?c.I2:0,Ic:c.Ic};
+  segs.forEach(s=>{
+    const v=Math.max(-2,Math.min(2,val[s.key]/Iref));
+    const show=Math.abs(v)>0.004;
+    if(S.playing)s.phase+=v*110*dt;
+    const sp=s.L/s.n;
+    s.el.forEach((e,k)=>{
+      if(!show){e.setAttribute("visibility","hidden");return}
+      const p=pointAt(s,s.phase+k*sp);e.setAttribute("cx",p[0]);e.setAttribute("cy",p[1]);e.setAttribute("visibility","visible");
+    });
+  });
+  $("r2grp").style.opacity=S.useR2?1:0.12;
+  $("tR2").style.opacity=S.useR2?1:0.2;
+  $("tEps").textContent="ε="+S.eps;
+  $("tR1").textContent="R₁ = "+kO(S.R1);
+  $("tR2").textContent="R₂ = "+kO(S.R2);
+  $("tC").textContent="C = "+uF(S.C);
+  $("tI").textContent="I = "+mA(c.I);
+  $("tVr").textContent="V(R₁) = "+Vf(c.Vr);
+  $("tVc").textContent="V_C = "+Vf(S.V);
+  $("tI2").textContent=S.useR2?"I₂ = "+mA(c.I2):"";
+  $("tIc").textContent="I_C = "+mA(c.Ic);
+  const n=Math.round(6*S.V/S.eps);
+  plus.forEach((p,i)=>p.setAttribute("visibility",i<n?"visible":"hidden"));
+  minus.forEach((p,i)=>p.setAttribute("visibility",i<n?"visible":"hidden"));
+  $("gap").setAttribute("opacity",(0.35*S.V/S.eps).toFixed(3));
+}
+
+/* ---------- readouts & status ---------- */
+function renderReadouts(){
+  const c=currents(),ti=tauInfo(),q=S.C*S.V;
+  $("roI").textContent=mA(c.I);$("roI2").textContent=S.useR2?mA(c.I2):"no R₂";$("roIc").textContent=mA(c.Ic);
+  $("roVr").textContent=Vf(c.Vr);$("roVc").textContent=Vf(S.V);
+  $("roQ").textContent=z(q*1e6).toFixed(1)+" µC";$("roU").textContent=z(0.5*S.C*S.V*S.V*1e3).toFixed(2)+" mJ";
+  $("roTau").textContent=isFinite(ti.tau)?sec(ti.tau):"∞ (no path)";$("roT").textContent=sec(S.t);
+  let msg;
+  if(S.closed){
+    const gap=Math.abs(S.V-ti.Vinf);
+    if(gap<0.005*S.eps)msg=`<b>Steady state (t ≫ τ).</b> Capacitor current is ≈ 0, so it acts like a gap. V_C has settled at ${Vf(ti.Vinf)}, and the total current is ε/${S.useR2?"(R₁+R₂)":"R₁"} = ${mA(c.I)}.`;
+    else if(S.V<ti.Vinf)msg=`<b>Charging.</b> V_C is rising toward ${Vf(ti.Vinf)} with τ = ${sec(ti.tau)}. As V_C grows, less voltage is left across R₁, so the total current shrinks.`;
+    else msg=`<b>Re-settling.</b> V_C is above its new final value ${Vf(ti.Vinf)}, so the capacitor is draining toward it.`;
+  }else if(S.useR2){
+    msg=S.V<0.005*S.eps?`<b>Open a long time.</b> The capacitor has emptied through R₂. All currents and voltages are ≈ 0.`:`<b>Switch open, capacitor discharging through R₂</b> with τ = R₂C = ${sec(ti.tau)}. The battery supplies nothing (I = 0) and I_C is negative: the capacitor is now the source.`;
+  }else msg=`<b>Switch open, no discharge path.</b> The charge is trapped on the plates, so V_C stays at ${Vf(S.V)} (ideal capacitor). Add R₂ to give it somewhere to go.`;
+  $("status").innerHTML=msg;
+}
+
+/* ---------- graphs ---------- */
+const css=n=>getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+function niceStep(range,target){const raw=range/target,p=Math.pow(10,Math.floor(Math.log10(raw))),f=raw/p;return (f<1.5?1:f<3?2:f<7?5:10)*p}
+function fitCanvas(cv){const r=cv.getBoundingClientRect(),d=window.devicePixelRatio||1;const w=Math.round(r.width*d),h=Math.round(r.height*d);if(cv.width!==w||cv.height!==h){cv.width=w;cv.height=h}return d}
+function plot(cv,o){
+  const d=fitCanvas(cv),ctx=cv.getContext("2d");ctx.setTransform(d,0,0,d,0,0);
+  const w=cv.width/d,h=cv.height/d,L=58,R=12,T=14,B=28,pw=w-L-R,ph=h-T-B;
+  const W=windowW(),t1=Math.max(S.t,W),t0=t1-W;
+  const pts=hist.filter(p=>p.t>=t0-W*0.01);
+  let lo=o.zero?0:Infinity,hi=-Infinity;
+  pts.forEach(p=>o.series.forEach(s=>{const v=p[s.k]*o.scale;if(v>hi)hi=v;if(v<lo)lo=v}));
+  hi=Math.max(hi,o.ref*1.0);lo=Math.min(lo,0);
+  const pad=(hi-lo||1)*0.1;hi+=pad;if(lo<0)lo-=pad;
+  const st=niceStep(hi-lo,5);
+  const X=t=>L+(t-t0)/W*pw,Y=v=>T+ph-(v-lo)/(hi-lo)*ph;
+  const ink=css("--ink"),mut=css("--muted"),line=css("--line");
+  ctx.clearRect(0,0,w,h);ctx.font="12px system-ui,sans-serif";ctx.fillStyle=mut;ctx.strokeStyle=line;ctx.lineWidth=1;
+  ctx.textAlign="right";ctx.textBaseline="middle";
+  for(let v=Math.ceil(lo/st)*st;v<=hi+1e-9;v+=st){const y=Y(v);ctx.beginPath();ctx.moveTo(L,y);ctx.lineTo(L+pw,y);ctx.stroke();ctx.fillText((Math.abs(v)<1e-9?0:+v.toFixed(3))+"",L-6,y)}
+  ctx.textAlign="center";ctx.textBaseline="top";
+  for(let i=0;i<=8;i++){const t=t0+W*i/8,x=X(t);ctx.beginPath();ctx.moveTo(x,T);ctx.lineTo(x,T+ph);ctx.stroke();ctx.fillText(t>=100?t.toFixed(0):t.toFixed(t>=10?1:2),x,T+ph+6)}
+  ctx.save();ctx.translate(12,T+ph/2);ctx.rotate(-Math.PI/2);ctx.textAlign="center";ctx.fillText(o.unit,0,0);ctx.restore();
+  ctx.textAlign="right";ctx.fillText("t (s)",w-R,h-14);
+  ctx.save();ctx.beginPath();ctx.rect(L,T,pw,ph);ctx.clip();
+  if(o.ref){ctx.strokeStyle=ink;ctx.setLineDash([2,4]);ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(L,Y(o.ref));ctx.lineTo(L+pw,Y(o.ref));ctx.stroke()}
+  events.forEach(e=>{if(e.t>=t0&&e.t<=t1){const x=X(e.t);ctx.strokeStyle=mut;ctx.setLineDash([6,4]);ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(x,T);ctx.lineTo(x,T+ph);ctx.stroke();ctx.setLineDash([]);ctx.fillStyle=ink;ctx.textAlign="left";ctx.textBaseline="top";ctx.fillText(" "+e.label,x,T+2)}});
+  o.series.forEach(s=>{
+    ctx.strokeStyle=css(s.c);ctx.lineWidth=s.w||2.5;ctx.setLineDash(s.dash||[]);ctx.beginPath();let first=true;
+    pts.forEach(p=>{const x=X(p.t),y=Y(p[s.k]*o.scale);if(first){ctx.moveTo(x,y);first=false}else ctx.lineTo(x,y)});ctx.stroke();
+  });
+  ctx.restore();ctx.setLineDash([]);
+  ctx.strokeStyle=ink;ctx.lineWidth=1;ctx.strokeRect(L,T,pw,ph);
+}
+function renderGraphs(){
+  plot($("gV"),{unit:"Voltage (V)",scale:1,ref:S.eps,zero:true,series:[{k:"Vc",c:"--vc"},{k:"Vr",c:"--vr",dash:[8,4]}]});
+  plot($("gI"),{unit:"Current (mA)",scale:1e3,ref:0,zero:true,series:[{k:"I",c:"--itot",w:3},{k:"I2",c:"--ir2",dash:[8,4]},{k:"Ic",c:"--ic",dash:[2,3],w:3}]});
+}
+
+/* ---------- main loop ---------- */
+let last=performance.now();
+function frame(now){
+  const dt=Math.min(0.05,(now-last)/1000);last=now;
+  if(S.playing){advance(S.speed*windowW()/40*dt)}
+  renderCircuit(dt);renderReadouts();renderGraphs();
+  requestAnimationFrame(frame);
+}
+
+/* ---------- controls ---------- */
+function syncUI(){
+  $("sEps").value=S.eps;$("sR1").value=S.R1/1e3;$("sC").value=S.C*1e6;$("sR2").value=S.R2/1e3;$("useR2").checked=S.useR2;$("sR2").disabled=!S.useR2;$("sSpeed").value=S.speed;
+  $("oEps").textContent=S.eps+" V";$("oR1").textContent=kO(S.R1);$("oC").textContent=uF(S.C);$("oR2").textContent=kO(S.R2);$("oSpeed").textContent=S.speed+"×";
+  $("playBtn").textContent=S.playing?"Pause":"Play";
+  setSwitch(S.closed);
+}
+$("sEps").oninput=e=>{S.eps=+e.target.value;syncUI()};
+$("sR1").oninput=e=>{S.R1=+e.target.value*1e3;syncUI()};
+$("sR2").oninput=e=>{S.R2=+e.target.value*1e3;syncUI()};
+$("sC").oninput=e=>{const n=+e.target.value*1e-6;S.V*=S.C/n;S.C=n;syncUI()};
+$("sSpeed").oninput=e=>{S.speed=+e.target.value;syncUI()};
+$("useR2").onchange=e=>{S.useR2=e.target.checked;syncUI()};
+$("swClosed").onclick=()=>setSwitch(true);
+$("swOpen").onclick=()=>setSwitch(false);
+$("playBtn").onclick=()=>{S.playing=!S.playing;syncUI()};
+$("resetBtn").onclick=()=>{resetSim();syncUI()};
+
+/* ---------- guided scenarios ---------- */
+function base(r2){Object.assign(S,{eps:12,R1:10e3,C:100e-6,R2:20e3,useR2:r2});resetSim()}
+const tour=[
+{t:"Series: just closed",run(){base(false);setSwitch(true);S.playing=false},
+ txt:()=>`<p><b>Predict:</b> the capacitor is empty and the switch has just closed. What are V<sub>C</sub>, the voltage across R, and the current?</p><details><summary>Show the physics</summary><p>V<sub>C</sub> = 0, so the capacitor acts like a plain wire for this instant. The loop rule gives ε = IR, so I = ε/R = ${mA(S.eps/S.R1)} and all ${S.eps} V is across R. Press Play to watch V<sub>C</sub> climb.</p></details>`},
+{t:"Series: closed a long time",run(){base(false);setSwitch(true);ff(10*tauChg());S.playing=false},
+ txt:()=>`<p><b>Predict:</b> after t ≫ τ = RC = ${sec(S.R1*S.C)}, what happened to the current and to V<sub>C</sub>?</p><details><summary>Show the physics</summary><p>Charge stopped flowing, so I → 0 and IR → 0, which leaves V<sub>C</sub> = ε = ${S.eps} V. The capacitor now acts like a gap. It holds q = Cε = ${(S.C*S.eps*1e6).toFixed(0)} µC and ½Cε² = ${(0.5*S.C*S.eps*S.eps*1e3).toFixed(2)} mJ.</p></details>`},
+{t:"Series: opened after charging",run(){base(false);setSwitch(true);ff(10*tauChg());setSwitch(false);S.playing=true},
+ txt:()=>`<p><b>Predict:</b> the capacitor is full and the switch is opened. Press Pause or watch the flat lines. What does V<sub>C</sub> do over a long time?</p><details><summary>Show the physics</summary><p>Nothing. With the switch open there is no loop for charge to travel around, so q and V<sub>C</sub> = ${S.eps} V stay constant for an ideal capacitor. A real one slowly leaks through its dielectric. To make it drain on purpose, add R₂ (scenarios 4 to 6).</p></details>`},
+{t:"With R₂: just closed",run(){base(true);setSwitch(true);S.playing=false},
+ txt:()=>`<p><b>Predict:</b> R₂ is in parallel with an empty capacitor. What is the total current at t = 0⁺?</p><details><summary>Show the physics</summary><p>V<sub>C</sub> = 0 and R₂ is in parallel with C, so there is no voltage across R₂ and I<sub>R₂</sub> = 0. The empty capacitor shorts R₂, so the circuit is just R₁: I<sub>total</sub> = ε/R₁ = ${mA(S.eps/S.R1)}. All of it goes into the capacitor.</p></details>`},
+{t:"With R₂: closed a long time",run(){base(true);setSwitch(true);ff(10*tauChg());S.playing=false},
+ txt:()=>`<p><b>Predict:</b> at steady state, what are the total current and V<sub>C</sub>?</p><details><summary>Show the physics</summary><p>The capacitor draws no current, so R₁ and R₂ are simply in series: I<sub>total</sub> = ε/(R₁+R₂) = ${mA(S.eps/(S.R1+S.R2))}. V<sub>C</sub> equals the voltage across R₂: V<sub>C</sub> = εR₂/(R₁+R₂) = ${Vf(S.eps*S.R2/(S.R1+S.R2))}. The capacitor current is zero. The charging time constant was τ = (R₁∥R₂)C = ${sec(tauChg())}.</p></details>`},
+{t:"With R₂: opened a long time",run(){base(true);setSwitch(true);ff(10*tauChg());setSwitch(false);ff(10*S.R2*S.C);S.playing=false},
+ txt:()=>`<p><b>Predict:</b> from the steady state, the switch is opened and left. What are V<sub>C</sub> and every current after a long time? Scroll the graph back: what happened right after opening?</p><details><summary>Show the physics</summary><p>Right after opening, the battery branch carries nothing (I<sub>total</sub> = 0), but the charged capacitor pushes current through R₂, so I<sub>R₂</sub> = V<sub>C</sub>/R₂ and I<sub>C</sub> = −I<sub>R₂</sub>. V<sub>C</sub> decays as e<sup>−t/R₂C</sup> with R₂C = ${sec(S.R2*S.C)}. After a long time everything is 0.</p></details>`}
+];
+const tb=$("tourBtns");
+tour.forEach((s,i)=>{const b=document.createElement("button");b.textContent=(i+1)+". "+s.t;b.onclick=()=>{
+  [...tb.children].forEach(x=>x.removeAttribute("aria-current"));b.setAttribute("aria-current","true");
+  s.run();syncUI();$("tourText").innerHTML=s.txt();};tb.appendChild(b)});
+
+/* ---------- quiz ---------- */
+const quiz=[
+{q:"A battery ε, resistor R and an <b>empty</b> capacitor C are in series. The switch closes at t = 0. Just after (t = 0⁺), the current is…",
+ a:"ε/R",w:["0","ε/2R","infinite"],e:"V<sub>C</sub> = 0 at that instant, so the capacitor acts like a wire and the full ε is across R."},
+{q:"Same circuit, switch closed for a very long time (t ≫ RC). The voltage across the capacitor is…",
+ a:"ε",w:["0","ε/2","ε/e"],e:"The current has died out, so there is no drop across R, and the capacitor voltage must equal ε by the loop rule."},
+{q:"The capacitor is fully charged, then the switch is opened and the circuit is left alone (ideal capacitor, no other path). V<sub>C</sub> will…",
+ a:"stay at ε",w:["fall to 0 with τ = RC","fall to ε/e after one RC","fall to 0 instantly"],e:"There is no closed path for the charge to leave. An ideal capacitor in an open circuit just holds its charge."},
+{q:"R₁ is in series with the combination (R₂ in parallel with C). The switch has been closed for a long time. V<sub>C</sub> =",
+ a:"εR₂/(R₁+R₂)",w:["ε","0","εR₁/(R₁+R₂)"],e:"At steady state the capacitor passes no current, so R₁ and R₂ form a voltage divider and C sits across R₂."},
+{q:"Same circuit, switch just closed with C <b>empty</b>. The total current leaving the battery is…",
+ a:"ε/R₁",w:["ε/(R₁+R₂)","0","ε/R₂"],e:"The empty capacitor is a wire across R₂, which shorts R₂ out. Only R₁ limits the current."},
+{q:"Same circuit after steady state, the switch is opened. V<sub>C</sub> then…",
+ a:"decays to 0 exponentially with τ = R₂C",w:["stays constant","decays with τ = (R₁+R₂)C","drops to 0 instantly"],e:"The battery branch is gone, so the only loop is C and R₂. Neither R₁ nor the battery appears in the time constant. V<sub>C</sub> cannot jump, so it decays smoothly."},
+{q:"In a series RC circuit you double C but keep ε and R the same. Which quantity does <b>not</b> change?",
+ a:"the initial current ε/R",w:["the time constant","the final charge on the capacitor","the final stored energy"],e:"τ = RC and q<sub>final</sub> = Cε both double, and ½Cε² doubles too. At t = 0 the empty capacitor is a wire, so C cannot affect the starting current."}
+];
+let correct=new Set();
+function shuffle(a){a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
+const qd=$("quiz");
+quiz.forEach((it,qi)=>{
+  const div=document.createElement("div");div.className="q";
+  div.innerHTML=`<div><b>${qi+1}.</b> ${it.q}</div><div class="opts"></div><div class="fb" hidden></div>`;
+  const opts=div.querySelector(".opts"),fb=div.querySelector(".fb");
+  shuffle([it.a,...it.w]).forEach(o=>{
+    const b=document.createElement("button");b.innerHTML=o;
+    b.onclick=()=>{
+      const ok=o===it.a;b.className=ok?"right":"wrong";
+      fb.hidden=false;fb.innerHTML=(ok?"<b>Correct.</b> ":"<b>Not quite.</b> ")+it.e;
+      if(ok)correct.add(qi);
+      $("score").textContent=`${correct.size} of ${quiz.length} correct so far.`;
+    };
+    opts.appendChild(b);
+  });
+  qd.appendChild(div);
+});
+
+/* ---------- challenge ---------- */
+let P=null;
+const pick=a=>a[Math.floor(Math.random()*a.length)];
+function newProblem(){
+  P={eps:pick([6,9,12,15,18,24]),R1:pick([2,5,10,20,50]),R2:pick([5,10,20,40,100]),C:pick([10,22,47,100,220,470])};
+  const ans=[
+   {l:"(a) Total current right after the switch closes (C empty)",u:"mA",v:P.eps/P.R1},
+   {l:"(b) Total current after a very long time",u:"mA",v:P.eps/(P.R1+P.R2)},
+   {l:"(c) Capacitor voltage after a very long time",u:"V",v:P.eps*P.R2/(P.R1+P.R2)},
+   {l:"(d) Charging time constant τ",u:"s",v:(P.R1*P.R2/(P.R1+P.R2))*P.C*1e-3}
+  ];
+  P.ans=ans;
+  $("chalText").innerHTML=`A battery ε = ${P.eps} V is connected through a switch to R₁ = ${P.R1} kΩ in series with the parallel combination of R₂ = ${P.R2} kΩ and C = ${P.C} µF. The capacitor starts empty and the switch is closed at t = 0.`;
+  $("chalFields").innerHTML=ans.map((a,i)=>`<label for="ch${i}">${a.l}</label><input id="ch${i}" inputmode="decimal" autocomplete="off"> ${a.u}<span class="mark" id="cm${i}" aria-live="polite"></span>`).join("");
+  $("chalFb").hidden=true;
+}
+$("chalNew").onclick=newProblem;
+$("chalCheck").onclick=()=>{
+  let ok=0;
+  P.ans.forEach((a,i)=>{
+    const x=parseFloat($("ch"+i).value),good=isFinite(x)&&Math.abs(x-a.v)<=0.02*Math.abs(a.v)+1e-9;
+    $("cm"+i).textContent=good?"✓ correct":"✗ try again";if(good)ok++;
+  });
+  const fb=$("chalFb");fb.hidden=false;
+  fb.innerHTML=`<b>${ok} of 4 correct</b> (answers within 2% count). Hints: at t = 0⁺ the empty C shorts R₂; at t → ∞ C is a gap, so R₁ and R₂ are in series; V<sub>C</sub> is the voltage across R₂; τ uses the Thevenin resistance R₁R₂/(R₁+R₂) (kΩ × µF = ms).`
+   +(ok===4?"":` <details><summary>Show worked answers</summary><p>(a) ε/R₁ = ${P.ans[0].v.toFixed(3)} mA<br>(b) ε/(R₁+R₂) = ${P.ans[1].v.toFixed(3)} mA<br>(c) εR₂/(R₁+R₂) = ${P.ans[2].v.toFixed(3)} V<br>(d) τ = ${P.ans[3].v.toPrecision(3)} s</p></details>`);
+};
+$("chalLab").onclick=()=>{
+  Object.assign(S,{eps:P.eps,R1:P.R1*1e3,R2:P.R2*1e3,C:P.C*1e-6,useR2:true});resetSim();setSwitch(true);S.playing=true;syncUI();
+  $("lab").scrollIntoView({behavior:"smooth"});
+};
+
+/* ---------- start ---------- */
+resetSim();syncUI();newProblem();
+requestAnimationFrame(t=>{last=t;frame(t)});
+</script>
+</body>
+</html>
