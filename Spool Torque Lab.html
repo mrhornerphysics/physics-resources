@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Spool Torque Lab</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* Layout idea: verdict band on top, one wide stage, then controls beside live torque readouts. */
+:root{
+  --bg:#f3f5f8; --surface:#ffffff; --ink:#14202b; --muted:#566676; --line:#d3dbe3;
+  --pull:#1d5fd1; --fric:#c2410c; --canvas:#eaeef3; --floor:#d9dfe6; --spool:#c9d3de; --axle:#8fa1b3;
+  --good:#17803d; --warn:#a16207;
+  --display:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0e161d; --surface:#16212b; --ink:#e6edf3; --muted:#93a4b4; --line:#2a3a48;
+    --pull:#5ea4ff; --fric:#ff9158; --canvas:#101b24; --floor:#1d2b37; --spool:#3a4b5b; --axle:#6d8296;
+    --good:#4ade80; --warn:#facc15; color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0e161d; --surface:#16212b; --ink:#e6edf3; --muted:#93a4b4; --line:#2a3a48;
+  --pull:#5ea4ff; --fric:#ff9158; --canvas:#101b24; --floor:#1d2b37; --spool:#3a4b5b; --axle:#6d8296;
+  --good:#4ade80; --warn:#facc15; color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font-family:var(--display);line-height:1.45;font-size:15px}
+.wrap{max-width:1020px;margin:0 auto;padding:20px 16px 40px;display:flex;flex-direction:column;gap:16px}
+h1{font-size:26px;line-height:1.15;margin:0 0 4px;font-weight:600;letter-spacing:-.01em;text-wrap:balance}
+.lead{margin:0;color:var(--muted);max-width:68ch}
+.verdict{background:var(--surface);border:1px solid var(--line);border-left:5px solid var(--pull);border-radius:8px;padding:12px 16px;display:flex;flex-direction:column;gap:2px}
+.verdict .head{font-size:20px;font-weight:600;text-wrap:balance}
+.verdict .sub{font-family:var(--mono);font-size:13px;color:var(--muted)}
+.stage{background:var(--surface);border:1px solid var(--line);border-radius:8px;overflow:hidden}
+canvas{display:block;width:100%;height:340px;background:var(--canvas)}
+.bar{display:flex;flex-wrap:wrap;gap:10px 14px;align-items:center;padding:10px 14px;border-top:1px solid var(--line)}
+button{font:inherit;font-weight:500;color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:7px 13px;cursor:pointer}
+button:hover{border-color:var(--pull)}
+button.primary{background:var(--pull);border-color:var(--pull);color:#fff}
+:root[data-theme="dark"] button.primary{color:#0b1218}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) button.primary{color:#0b1218}}
+button:focus-visible,input:focus-visible{outline:2px solid var(--pull);outline-offset:2px}
+.legend{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:13px;color:var(--muted)}
+.legend i{display:inline-block;width:18px;height:4px;border-radius:2px;margin-right:6px;vertical-align:middle}
+.presets{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.presets span{font-size:13px;color:var(--muted)}
+.presets button{padding:5px 10px;font-size:13px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media (max-width:760px){.grid{grid-template-columns:1fr}}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:14px 16px}
+.card h2{font-size:13px;margin:0 0 10px;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);font-weight:600}
+.ctl{display:grid;grid-template-columns:1fr auto;gap:2px 10px;margin-bottom:12px}
+.ctl label{font-weight:500}
+.ctl output{font-family:var(--mono);font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums}
+.ctl input[type=range]{grid-column:1/3;width:100%;accent-color:var(--pull)}
+.seg{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
+.seg legend{font-weight:500;padding:0;margin-bottom:4px}
+fieldset{border:0;padding:0;margin:0 0 12px}
+.seg label{display:inline-flex;gap:6px;align-items:center;padding:5px 10px;border:1px solid var(--line);border-radius:6px;cursor:pointer;font-size:14px}
+.seg input{accent-color:var(--pull)}
+.seg label:has(input:checked){border-color:var(--pull);background:color-mix(in srgb,var(--pull) 10%,transparent)}
+.tiles{display:grid;gap:10px}
+.tile{border:1px solid var(--line);border-radius:6px;padding:8px 12px;display:grid;grid-template-columns:1fr auto;gap:0 10px}
+.tile.on{border-color:var(--pull);background:color-mix(in srgb,var(--pull) 7%,transparent)}
+.tile .k{font-size:13px;color:var(--muted)}
+.tile .v{font-family:var(--mono);font-size:15px;font-weight:500;text-align:right;font-variant-numeric:tabular-nums}
+.tile .n{grid-column:1/3;font-size:12.5px;color:var(--muted)}
+.gauge{height:6px;background:var(--line);border-radius:3px;margin-top:6px;grid-column:1/3;overflow:hidden}
+.gauge b{display:block;height:100%;width:0;background:var(--fric)}
+.pill{display:inline-block;border-radius:999px;padding:2px 10px;font-size:12.5px;font-weight:600;border:1px solid var(--line)}
+.pill.ok{color:var(--good);border-color:var(--good)}
+.pill.bad{color:var(--warn);border-color:var(--warn)}
+.formula{font-family:var(--mono);font-size:13px;background:var(--bg);border-radius:6px;padding:8px 10px;margin:10px 0 6px;overflow-x:auto;font-variant-numeric:tabular-nums}
+.why{margin:0;color:var(--ink)}
+.notes{font-size:14px;color:var(--muted)}
+.notes ul{margin:6px 0 0;padding-left:20px}
+.notes li{margin-bottom:4px}
+.notes b{color:var(--ink);font-weight:600}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Spool Torque Lab</h1>
+    <p class="lead">A spool sits on the floor and a string pulls it. Choose where the string leaves the axle and how hard and at what angle you pull, then watch which way the torques turn it and which way friction pushes back.</p>
+  </header>
+
+  <div class="verdict" aria-live="polite">
+    <div class="head" id="vHead">&nbsp;</div>
+    <div class="sub" id="vSub">&nbsp;</div>
+  </div>
+
+  <section class="stage" aria-label="Spool simulation">
+    <canvas id="cv" role="img" aria-label="Side view of a spool on a floor with a string pulling it. Arrows show the force of the string, friction, normal force and weight, and curved arrows show torques."></canvas>
+    <div class="bar">
+      <button id="btnPlay" class="primary" type="button">Pull</button>
+      <button id="btnReset" type="button">Reset</button>
+      <div class="legend">
+        <span><i style="background:var(--pull)"></i>String pull F</span>
+        <span><i style="background:var(--fric)"></i>Friction f</span>
+        <span><i style="background:var(--muted)"></i>Normal N and weight mg</span>
+      </div>
+    </div>
+    <div class="bar">
+      <div class="presets">
+        <span>Try:</span>
+        <button type="button" data-pre="bottomFlat">Bottom, flat pull</button>
+        <button type="button" data-pre="bottomSteep">Bottom, steep pull</button>
+        <button type="button" data-pre="critical">Critical angle</button>
+        <button type="button" data-pre="topFlat">Top, flat pull</button>
+      </div>
+    </div>
+  </section>
+
+  <div class="grid">
+    <section class="card" aria-labelledby="hc">
+      <h2 id="hc">Controls</h2>
+
+      <fieldset class="seg" role="radiogroup">
+        <legend>String leaves the axle from the</legend>
+        <label><input type="radio" name="side" value="-1" checked> Bottom</label>
+        <label><input type="radio" name="side" value="1"> Top</label>
+      </fieldset>
+
+      <div class="ctl"><label for="F">Pull force F</label><output id="oF"></output>
+        <input id="F" type="range" min="0" max="15" step="0.5" value="4"></div>
+      <div class="ctl"><label for="th">Pull angle above the floor θ</label><output id="oth"></output>
+        <input id="th" type="range" min="0" max="85" step="1" value="0"></div>
+      <div class="ctl"><label for="ratio">Axle radius r (flange radius R = 10 cm)</label><output id="orat"></output>
+        <input id="ratio" type="range" min="0.2" max="0.9" step="0.05" value="0.5"></div>
+      <div class="ctl"><label for="mu">Static friction coefficient μ</label><output id="omu"></output>
+        <input id="mu" type="range" min="0.02" max="1" step="0.02" value="0.5"></div>
+      <div class="ctl"><label for="beta">Mass spread I / (mR²)</label><output id="obeta"></output>
+        <input id="beta" type="range" min="0.3" max="1" step="0.05" value="0.5"></div>
+      <div class="ctl"><label for="speed">Playback speed</label><output id="ospeed"></output>
+        <input id="speed" type="range" min="0.05" max="1" step="0.05" value="0.25"></div>
+
+      <fieldset class="seg" role="radiogroup">
+        <legend>Show torque arrows about</legend>
+        <label><input type="radio" name="pivot" value="center" checked> Center C</label>
+        <label><input type="radio" name="pivot" value="contact"> Contact point P</label>
+      </fieldset>
+      <label class="seg" style="border:0;padding:0;cursor:pointer"><span style="display:inline-flex;gap:6px;align-items:center"><input type="checkbox" id="showF" checked style="accent-color:var(--pull)"> Show force arrows</span></label>
+    </section>
+
+    <section class="card" aria-labelledby="hr">
+      <h2 id="hr">Live torques and friction</h2>
+      <div class="tiles">
+        <div class="tile" id="tC1"><span class="k">String torque about C</span><span class="v" id="vC1"></span><span class="n">The string line sits r from the center, so τ = F·r.</span></div>
+        <div class="tile" id="tC2"><span class="k">Friction torque about C</span><span class="v" id="vC2"></span><span class="n">Friction acts at the floor, R from the center, so τ = f·R.</span></div>
+        <div class="tile" id="tP"><span class="k">Net torque about P</span><span class="v" id="vP"></span><span class="n">Only the string counts here. f, N and mg all act through P.</span></div>
+        <div class="tile" id="tF"><span class="k">Friction force on spool</span><span class="v" id="vF"></span>
+          <span class="n" id="nF"></span><div class="gauge"><b id="gF"></b></div></div>
+      </div>
+      <div class="formula" id="formula"></div>
+      <p class="why" id="why"></p>
+    </section>
+  </div>
+
+  <section class="card notes">
+    <h2>How to read it</h2>
+    <ul>
+      <li><b>Sign convention:</b> counter-clockwise (↺) is positive, clockwise (↻) is negative.</li>
+      <li><b>Pick P as the pivot to predict the direction.</b> The floor contact point is the instantaneous axis of rotation for rolling. Friction and the normal force pass through it, so the string torque alone decides the turn.</li>
+      <li><b>Pick C as the pivot to see friction work.</b> The string torque and the friction torque both act about the center, and Newton's second law for the center of mass adds the force balance.</li>
+      <li><b>Critical angle:</b> with the string off the bottom of the axle, the string line passes through P when cos θ = r / R. Flatter than that, the spool rolls toward the hand. Steeper, it rolls away.</li>
+      <li>Model: a 1 kg spool, massless string that stays tangent to the axle, flat floor, rolling friction ignored. Kinetic friction is 0.8 of the static value. The run stops after 3 s of simulated time.</li>
+    </ul>
+  </section>
+</div>
+
+<script>
+(function(){
+  var R=0.10, m=1.0, g=9.8, TMAX=3, KFAC=0.8;
+  var P={F:4,th:0,side:-1,ratio:0.5,mu:0.5,beta:0.5,speed:0.25,pivot:'center',forces:true};
+  var S={x:0,v:0,phi:0,w:0,t:0}, playing=false;
+  var $=function(id){return document.getElementById(id)};
+  var cv=$('cv'), ctx=cv.getContext('2d'), W=0, H=0, dpr=1;
+
+  function sgn(a){return a>0?1:(a<0?-1:0)}
+
+  function dyn(){
+    var th=P.th*Math.PI/180, F=P.F, Fx=F*Math.cos(th), Fy=F*Math.sin(th);
+    var r=P.ratio*R, I=P.beta*m*R*R;
+    var qx=P.side*r*(-Math.sin(th)), qy=P.side*r*Math.cos(th);
+    var tauFC=qx*Fy-qy*Fx;
+    var tauFP=qx*Fy-(R+qy)*Fx;
+    var N=m*g-Fy, muS=P.mu, muK=KFAC*P.mu;
+    var d={th:th,F:F,Fx:Fx,Fy:Fy,r:r,I:I,qx:qx,qy:qy,tauFC:tauFC,tauFP:tauFP,N:N,lifted:N<=0,f:0,a:0,alpha:0,mode:'roll',fmax:muS*Math.max(N,0)};
+    if(d.lifted){d.N=0;d.fmax=0;d.mode='lift';return d}
+    var s=S.v+R*S.w;
+    var aR=(R*R*Fx-R*tauFC)/(I+m*R*R);
+    var fR=m*aR-Fx;
+    if(Math.abs(s)<1e-4 && Math.abs(fR)<=muS*N){
+      d.mode='roll'; d.a=aR; d.alpha=-aR/R; d.f=fR;
+    } else {
+      var aPfree=Fx/m+R*tauFC/I;
+      var dir=Math.abs(s)>=1e-4?sgn(s):sgn(aPfree);
+      d.mode='slip'; d.f=-dir*muK*N; d.a=(Fx+d.f)/m; d.alpha=(tauFC+R*d.f)/I;
+    }
+    return d;
+  }
+
+  function step(dt){
+    var d=dyn();
+    if(d.lifted) return;
+    var s0=S.v+R*S.w;
+    S.v+=d.a*dt; S.w+=d.alpha*dt; S.x+=S.v*dt; S.phi+=S.w*dt; S.t+=dt;
+    if(d.mode==='roll'){ S.w=-S.v/R; }
+    else{
+      var s1=S.v+R*S.w;
+      if(s0!==0 && sgn(s0)!==sgn(s1)){ S.w=-S.v/R; }
+    }
+  }
+
+  function reset(){S={x:0,v:0,phi:0,w:0,t:0}; playing=false; $('btnPlay').textContent='Pull'}
+
+  /* ---------- drawing ---------- */
+  function resize(){
+    dpr=window.devicePixelRatio||1;
+    var rect=cv.getBoundingClientRect();
+    W=rect.width; H=rect.height;
+    cv.width=Math.round(W*dpr); cv.height=Math.round(H*dpr);
+  }
+
+  function arrow(x0,y0,x1,y1,color,wd,label,lx,ly){
+    var dx=x1-x0, dy=y1-y0, L=Math.hypot(dx,dy);
+    if(L<3) return;
+    var ux=dx/L, uy=dy/L, hl=Math.min(11,L*0.5);
+    ctx.strokeStyle=color; ctx.fillStyle=color; ctx.lineWidth=wd; ctx.lineCap='round';
+    ctx.beginPath(); ctx.moveTo(x0,y0); ctx.lineTo(x1-ux*hl*0.6,y1-uy*hl*0.6); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(x1,y1);
+    ctx.lineTo(x1-ux*hl-uy*hl*0.55,y1-uy*hl+ux*hl*0.55);
+    ctx.lineTo(x1-ux*hl+uy*hl*0.55,y1-uy*hl-ux*hl*0.55); ctx.closePath(); ctx.fill();
+    if(label){ ctx.font='600 14px '+getComputedStyle(document.body).fontFamily; ctx.fillStyle=color; ctx.fillText(label,x1+(lx||6),y1+(ly||-6)); }
+  }
+
+  function arcArrow(x,y,rad,a0,a1,cw,color,label){
+    ctx.strokeStyle=color; ctx.fillStyle=color; ctx.lineWidth=4; ctx.lineCap='round';
+    ctx.beginPath();
+    if(cw) ctx.arc(x,y,rad,a0,a1,false); else ctx.arc(x,y,rad,a0,a1,false);
+    ctx.stroke();
+    var ea=cw?a1:a0, tx,ty;
+    if(cw){tx=-Math.sin(ea);ty=Math.cos(ea)} else {tx=Math.sin(ea);ty=-Math.cos(ea)}
+    var px=x+rad*Math.cos(ea), py=y+rad*Math.sin(ea), hl=11;
+    ctx.beginPath(); ctx.moveTo(px+tx*hl,py+ty*hl);
+    ctx.lineTo(px-ty*hl*0.6,py+tx*hl*0.6); ctx.lineTo(px+ty*hl*0.6,py-tx*hl*0.6); ctx.closePath(); ctx.fill();
+    if(label){
+      var ma=(a0+a1)/2; ctx.font='600 13px '+getComputedStyle(document.body).fontFamily;
+      var lx=x+(rad+10)*Math.cos(ma), ly=y+(rad+10)*Math.sin(ma);
+      ctx.textAlign='right'; ctx.fillText(label,lx,ly+4); ctx.textAlign='left';
+    }
+  }
+
+  function draw(){
+    var cs=getComputedStyle(document.documentElement);
+    var cPull=cs.getPropertyValue('--pull').trim(), cFric=cs.getPropertyValue('--fric').trim();
+    var cInk=cs.getPropertyValue('--ink').trim(), cMuted=cs.getPropertyValue('--muted').trim();
+    var cCanvas=cs.getPropertyValue('--canvas').trim(), cFloor=cs.getPropertyValue('--floor').trim();
+    var cSpool=cs.getPropertyValue('--spool').trim(), cAxle=cs.getPropertyValue('--axle').trim(), cLine=cs.getPropertyValue('--line').trim();
+    var fam=getComputedStyle(document.body).fontFamily;
+
+    ctx.setTransform(dpr,0,0,dpr,0,0);
+    ctx.fillStyle=cCanvas; ctx.fillRect(0,0,W,H);
+
+    var Rpx=Math.min(100,W*0.16), ppm=Rpx/R, rpx=P.ratio*Rpx;
+    var cx=Math.max(Rpx+78,W*0.34), floorY=H-70, cy=floorY-Rpx;
+    var d=dyn();
+
+    /* floor */
+    ctx.fillStyle=cFloor; ctx.fillRect(0,floorY,W,H-floorY);
+    ctx.strokeStyle=cMuted; ctx.lineWidth=2; ctx.beginPath(); ctx.moveTo(0,floorY); ctx.lineTo(W,floorY); ctx.stroke();
+    var k0=Math.floor((S.x-cx/ppm)/0.1)-1, k1=Math.ceil((S.x+(W-cx)/ppm)/0.1)+1;
+    ctx.font='12px '+fam; ctx.fillStyle=cMuted; ctx.strokeStyle=cMuted; ctx.lineWidth=1;
+    for(var k=k0;k<=k1;k++){
+      var sx=cx+(k*0.1-S.x)*ppm, big=(((k%5)+5)%5===0);
+      ctx.beginPath(); ctx.moveTo(sx,floorY); ctx.lineTo(sx,floorY+(big?12:6)); ctx.stroke();
+      if(big){ ctx.textAlign='center'; ctx.fillText((k*0.1).toFixed(1)+' m',sx,floorY+62); }
+    }
+    ctx.textAlign='left';
+
+    /* string geometry */
+    var th=d.th, ux=Math.cos(th), uy=-Math.sin(th);
+    var q0x=cx+d.qx*ppm, q0y=cy-d.qy*ppm;
+    var L=Math.min(280,W-q0x-34);
+    if(Math.sin(th)>0.01) L=Math.min(L,(q0y-20)/Math.sin(th));
+    L=Math.max(L,70);
+    var ex=q0x+ux*L, ey=q0y+uy*L;
+
+    /* spool */
+    ctx.save(); ctx.translate(cx,cy); ctx.rotate(-S.phi);
+    ctx.fillStyle=cSpool; ctx.strokeStyle=cMuted; ctx.lineWidth=2;
+    ctx.beginPath(); ctx.arc(0,0,Rpx,0,6.2832); ctx.fill(); ctx.stroke();
+    ctx.strokeStyle=cLine; ctx.lineWidth=1.5;
+    for(var i=0;i<6;i++){ var a=i*Math.PI/3; ctx.beginPath(); ctx.moveTo(Math.cos(a)*rpx,Math.sin(a)*rpx); ctx.lineTo(Math.cos(a)*Rpx*0.94,Math.sin(a)*Rpx*0.94); ctx.stroke(); }
+    ctx.fillStyle=cAxle; ctx.strokeStyle=cMuted; ctx.lineWidth=2;
+    ctx.beginPath(); ctx.arc(0,0,rpx,0,6.2832); ctx.fill(); ctx.stroke();
+    ctx.strokeStyle=cPull; ctx.lineWidth=3; ctx.beginPath(); ctx.arc(0,0,rpx+1.5,0,6.2832); ctx.stroke();
+    ctx.fillStyle=cInk; ctx.beginPath(); ctx.arc(Rpx*0.8,0,5,0,6.2832); ctx.fill();
+    ctx.restore();
+
+    /* string and hand */
+    ctx.strokeStyle=cMuted; ctx.lineWidth=2; ctx.beginPath(); ctx.moveTo(q0x,q0y); ctx.lineTo(ex,ey); ctx.stroke();
+    ctx.fillStyle=cMuted; ctx.beginPath(); ctx.arc(ex,ey,7,0,6.2832); ctx.fill();
+    ctx.fillStyle=cMuted; ctx.font='12px '+fam; ctx.fillText('hand',ex-14,ey-12);
+
+    /* marks: C and P */
+    ctx.fillStyle=cInk; ctx.beginPath(); ctx.arc(cx,cy,3.5,0,6.2832); ctx.fill();
+    ctx.font='600 13px '+fam; ctx.fillText('C',cx+7,cy-6);
+    ctx.beginPath(); ctx.arc(cx,floorY,4,0,6.2832); ctx.fill(); ctx.fillText('P',cx+8,floorY-8);
+
+    /* force arrows */
+    var PXN=9;
+    if(P.forces){
+      if(d.F>0){ var Lf=Math.min(d.F*PXN,L-12); arrow(q0x,q0y,q0x+ux*Lf,q0y+uy*Lf,cPull,4,'F',6,-8); }
+      arrow(cx-14,cy,cx-14,cy+m*g*PXN,cMuted,3,'mg',-34,6);
+      if(d.N>0) arrow(cx+14,floorY,cx+14,floorY-d.N*PXN,cMuted,3,'N',8,10);
+      if(Math.abs(d.f)>0.02){ var fy=floorY-7; arrow(cx,fy,cx+sgn(d.f)*Math.max(Math.abs(d.f)*PXN,6),fy,cFric,4,'f',sgn(d.f)>0?6:-16,-8); }
+    }
+
+    /* torque arrows */
+    var small=1e-3;
+    if(P.pivot==='center'){
+      var a0=Math.PI*0.62, a1=Math.PI*1.38;
+      if(Math.abs(d.tauFC)>small) arcArrow(cx,cy,Rpx+15,a0,a1,d.tauFC<0,cPull,'τF');
+      var tf=R*d.f;
+      if(Math.abs(tf)>small) arcArrow(cx,cy,Rpx+31,a0,a1,tf<0,cFric,'τf');
+    } else {
+      ctx.strokeStyle=cInk; ctx.lineWidth=1.5; ctx.beginPath(); ctx.arc(cx,floorY,8,0,6.2832); ctx.stroke();
+      if(Math.abs(d.tauFP)>small) arcArrow(cx,floorY,36,0.12,Math.PI-0.12,d.tauFP<0,cPull,'τ about P');
+    }
+
+    /* lift-off notice */
+    if(d.lifted){ ctx.fillStyle=cFric; ctx.font='600 14px '+fam; ctx.fillText('F sinθ ≥ mg: the spool would leave the floor. Lower F or θ.',16,26); }
+
+    updateReadouts(d);
+  }
+
+  /* ---------- readouts ---------- */
+  var last={};
+  function setT(id,txt){ if(last[id]!==txt){ last[id]=txt; $(id).textContent=txt; } }
+  function dirT(t){ if(Math.abs(t)<1e-3) return '≈ 0'; return Math.abs(t).toFixed(3)+' N·m '+(t>0?'↺ CCW':'↻ CW'); }
+
+  function updateReadouts(d){
+    var r=d.r, cosT=Math.cos(d.th);
+    setT('vC1',dirT(d.tauFC));
+    setT('vC2',dirT(R*d.f));
+    setT('vP',dirT(d.tauFP));
+    $('tC1').classList.toggle('on',P.pivot==='center'); $('tC2').classList.toggle('on',P.pivot==='center'); $('tP').classList.toggle('on',P.pivot==='contact');
+
+    setT('vF',Math.abs(d.f)<0.005?'0.00 N':Math.abs(d.f).toFixed(2)+' N '+(d.f>0?'→ right':'← left'));
+    var mode=d.mode==='roll'?'Rolling without slipping (static friction)':d.mode==='slip'?'Slipping (kinetic friction)':'Off the floor';
+    setT('nF',mode+'. Limit μN = '+d.fmax.toFixed(2)+' N.');
+    var need=d.fmax>0?Math.min(1,Math.abs(d.f)/d.fmax):0; $('gF').style.width=(need*100).toFixed(0)+'%';
+
+    var f1,res;
+    if(P.side<0){ f1='τP = F (r − R cosθ) = '+d.F.toFixed(1)+' × ('+r.toFixed(3)+' − '+R.toFixed(3)+' × '+cosT.toFixed(2)+')'; }
+    else { f1='τP = −F (r + R cosθ) = −'+d.F.toFixed(1)+' × ('+r.toFixed(3)+' + '+R.toFixed(3)+' × '+cosT.toFixed(2)+')'; }
+    setT('formula',f1+' = '+d.tauFP.toFixed(3)+' N·m');
+
+    var why, head;
+    var small=Math.abs(d.tauFP)<1e-3;
+    if(d.lifted){ head='The spool lifts off the floor'; why='The upward part of the pull, F sinθ, is at least the weight mg, so the normal force drops to zero and friction vanishes.'; }
+    else if(d.F===0){ head='No pull, so nothing moves'; why='Set a force above zero to see the torques.'; }
+    else if(small){
+      head='Holds still: the string line passes through P';
+      why='About P the string has no lever arm, so there is no torque to start the spool turning. Static friction cancels the horizontal pull ('+d.Fx.toFixed(1)+' N). Increase F until friction hits its limit and it slips.';
+    } else if(d.tauFP<0){
+      head='Rolls right, toward the hand, turning clockwise';
+      why='About P the pull makes a clockwise torque, so the spool pivots over its contact point and rolls toward the hand. About C the string torque alone is '+(d.tauFC>0?'counter-clockwise':'clockwise')+', and friction supplies the rest of the turning and slows the push.';
+    } else {
+      head='Rolls left, away from the hand, turning counter-clockwise';
+      why='About P the pull makes a counter-clockwise torque, so the spool rolls away from the hand even though the pull points right. The string passes on the far side of P.';
+    }
+    if(!d.lifted && d.mode==='slip') head='Slips: friction is too small to roll cleanly';
+    setT('vHead',head); setT('why',why);
+
+    var crit='';
+    if(P.side<0){ var tc=Math.acos(P.ratio)*180/Math.PI; crit=' Critical angle θc = '+tc.toFixed(0)+'°.'; }
+    var sub=d.lifted?'':'a = '+(d.a>=0?'+':'−')+Math.abs(d.a).toFixed(2)+' m/s²  α = '+(d.alpha>=0?'+':'−')+Math.abs(d.alpha).toFixed(1)+' rad/s²  t = '+S.t.toFixed(2)+' s  x = '+S.x.toFixed(2)+' m'+crit;
+    setT('vSub',sub||' ');
+  }
+
+  /* ---------- controls ---------- */
+  function syncOut(){
+    $('oF').textContent=P.F.toFixed(1)+' N';
+    $('oth').textContent=P.th+'°';
+    $('orat').textContent=(P.ratio*R*100).toFixed(1)+' cm  (r/R = '+P.ratio.toFixed(2)+')';
+    $('omu').textContent='μ = '+P.mu.toFixed(2)+', kinetic '+(KFAC*P.mu).toFixed(2);
+    $('obeta').textContent=P.beta.toFixed(2)+(Math.abs(P.beta-0.5)<0.01?'  (solid disk)':P.beta>=0.99?'  (hoop)':'');
+    $('ospeed').textContent=P.speed.toFixed(2)+'×';
+  }
+  function bind(id,key,num){
+    $(id).addEventListener('input',function(e){ P[key]=parseFloat(e.target.value); syncOut(); });
+  }
+  bind('F','F'); bind('th','th'); bind('ratio','ratio'); bind('mu','mu'); bind('beta','beta'); bind('speed','speed');
+  Array.prototype.forEach.call(document.querySelectorAll('input[name=side]'),function(el){
+    el.addEventListener('change',function(){ P.side=parseInt(el.value,10); });
+  });
+  Array.prototype.forEach.call(document.querySelectorAll('input[name=pivot]'),function(el){
+    el.addEventListener('change',function(){ P.pivot=el.value; });
+  });
+  $('showF').addEventListener('change',function(e){ P.forces=e.target.checked; });
+  $('btnPlay').addEventListener('click',function(){
+    if(S.t>=TMAX) reset();
+    playing=!playing; $('btnPlay').textContent=playing?'Pause':'Pull';
+  });
+  $('btnReset').addEventListener('click',reset);
+
+  function setUI(o){
+    for(var k in o){ P[k]=o[k]; }
+    $('F').value=P.F; $('th').value=P.th; $('ratio').value=P.ratio;
+    Array.prototype.forEach.call(document.querySelectorAll('input[name=side]'),function(el){ el.checked=(parseInt(el.value,10)===P.side); });
+    syncOut(); reset();
+  }
+  var presets={
+    bottomFlat:{side:-1,th:0,ratio:0.5,F:4},
+    bottomSteep:{side:-1,th:70,ratio:0.5,F:4},
+    critical:{side:-1,th:60,ratio:0.5,F:4},
+    topFlat:{side:1,th:0,ratio:0.5,F:4}
+  };
+  Array.prototype.forEach.call(document.querySelectorAll('[data-pre]'),function(b){
+    b.addEventListener('click',function(){ setUI(presets[b.getAttribute('data-pre')]); });
+  });
+
+  /* ---------- loop ---------- */
+  var lastT=performance.now();
+  function frame(now){
+    var dtr=Math.min(0.05,(now-lastT)/1000); lastT=now;
+    if(playing){
+      var rem=dtr*P.speed, h=1/600;
+      while(rem>1e-9){
+        var dt=Math.min(h,rem); step(dt); rem-=dt;
+        if(S.t>=TMAX){ playing=false; $('btnPlay').textContent='Pull again'; break; }
+      }
+      if(dyn().lifted){ playing=false; $('btnPlay').textContent='Pull'; }
+    }
+    draw();
+    requestAnimationFrame(frame);
+  }
+  window.addEventListener('resize',resize);
+  resize(); syncOut(); requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>
