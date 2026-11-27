@@ -62,7 +62,7 @@
 
   .choices {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(17rem, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(16rem, 1fr));
     gap: 1.5rem;
   }
   .choice {
@@ -92,7 +92,13 @@
   .art svg { width: 100%; max-width: 240px; height: auto; }
   .body { padding: 1.25rem 1.5rem 1.5rem; display: flex; flex-direction: column; gap: .5rem; flex: 1; }
   .topic { color: var(--accent); font-weight: 700; font-size: 1rem; }
-  h2 {
+  h2.unit {
+    font-family: "Bricolage Grotesque", "Atkinson Hyperlegible", system-ui, sans-serif;
+    font-weight: 800; font-size: 1.35rem; margin: 0 0 1rem;
+    padding-bottom: .5rem; border-bottom: 2px solid var(--line);
+  }
+  section + section { margin-top: 3rem; }
+  h3 {
     font-family: "Bricolage Grotesque", "Atkinson Hyperlegible", system-ui, sans-serif;
     font-weight: 600; font-size: 1.75rem; line-height: 1.1; margin: 0;
   }
@@ -114,10 +120,12 @@
 <main>
   <header>
     <h1>Physics Practice</h1>
-    <p>Pick a topic to start. Each practice set opens in this tab, so use your browser’s back button to return here.</p>
+    <p>Pick a quiz, lab, or interactive to start. Each one opens in this tab, so use your browser’s back button to return here.</p>
   </header>
 
-  <div class="choices">
+  <section>
+    <h2 class="unit">Unit 2 · Force and Translational Dynamics</h2>
+    <div class="choices">
     <a class="choice" href="Gravitation%20practice%20Topic%202-6.html">
       <div class="art" aria-hidden="true">
         <svg viewBox="0 0 240 160">
@@ -134,12 +142,11 @@
       </div>
       <div class="body">
         <span class="topic">Topic 2.6</span>
-        <h2>Gravitational Force</h2>
+        <h3>Gravitational Force</h3>
         <p>Inverse-square relationships, gravitational fields, free fall, and Newton’s third law for gravity.</p>
         <span class="go">Start gravitation practice</span>
       </div>
     </a>
-
     <a class="choice circ" href="circular-motion-2-9.html">
       <div class="art" aria-hidden="true">
         <svg viewBox="0 0 240 160">
@@ -156,11 +163,17 @@
       </div>
       <div class="body">
         <span class="topic">Topic 2.9</span>
-        <h2>Circular Motion</h2>
+        <h3>Circular Motion</h3>
         <p>Centripetal acceleration, net force toward the center, and objects moving in circles.</p>
         <span class="go">Start circular motion practice</span>
       </div>
     </a>
+    </div>
+  </section>
+
+  <section>
+    <h2 class="unit">Unit 3 · Work, Energy, and Power</h2>
+    <div class="choices">
     <a class="choice energy" href="Unit%203%20Energy%20Quiz.html">
       <div class="art" aria-hidden="true">
         <svg viewBox="0 0 240 160">
@@ -176,11 +189,68 @@
       </div>
       <div class="body">
         <span class="topic">Unit 3</span>
-        <h2>Work and Energy</h2>
+        <h3>Work and Energy</h3>
         <p>Kinetic and potential energy, work, conservation of energy, and power.</p>
         <span class="go">Start energy quiz</span>
       </div>
     </a>
+    <a class="choice energy" href="Work%20to%20Kinetic%20Energy.html">
+      <div class="art" aria-hidden="true">
+        <svg viewBox="0 0 240 160">
+          <line x1="20" y1="110" x2="220" y2="110" stroke="var(--ink)" stroke-width="3" stroke-linecap="round"/>
+          <rect x="40" y="76" width="44" height="34" rx="4" fill="var(--energy)" opacity=".45"/>
+          <rect x="150" y="76" width="44" height="34" rx="4" fill="var(--energy)" opacity=".9"/>
+          <line x1="8" y1="93" x2="34" y2="93" stroke="var(--ink)" stroke-width="4" stroke-linecap="round"/>
+          <path d="M30 86 L42 93 L30 100 Z" fill="var(--ink)"/>
+          <text x="18" y="80" font-size="16" font-style="italic" font-family="Georgia, serif" fill="var(--ink)">F</text>
+          <line x1="198" y1="64" x2="222" y2="64" stroke="var(--energy)" stroke-width="4" stroke-linecap="round"/>
+          <path d="M218 57 L230 64 L218 71 Z" fill="var(--energy)"/>
+          <text x="204" y="54" font-size="16" font-style="italic" font-family="Georgia, serif" fill="var(--ink)">v</text>
+          <line x1="62" y1="128" x2="172" y2="128" stroke="var(--ink)" stroke-width="2"/>
+          <line x1="62" y1="122" x2="62" y2="134" stroke="var(--ink)" stroke-width="2"/>
+          <line x1="172" y1="122" x2="172" y2="134" stroke="var(--ink)" stroke-width="2"/>
+          <text x="117" y="150" text-anchor="middle" font-size="16" font-style="italic" font-family="Georgia, serif" fill="var(--ink)">d</text>
+          <text x="117" y="36" text-anchor="middle" font-size="18" font-style="italic" font-family="Georgia, serif" fill="var(--ink)">W = Fd = ΔK</text>
+        </svg>
+      </div>
+      <div class="body">
+        <span class="topic">Unit 3</span>
+        <h3>Work to Kinetic Energy</h3>
+        <p>See how work done by a force changes an object’s kinetic energy.</p>
+        <span class="go">Open interactive</span>
+      </div>
+    </a>
+    <a class="choice energy" href="Unit3_Work_Energy_Power_Interactive.html">
+      <div class="art" aria-hidden="true">
+        <svg viewBox="0 0 240 160">
+          <path d="M30 124 L210 124 L210 54 Z" fill="var(--energy)" fill-opacity=".18" stroke="var(--ink)" stroke-width="3" stroke-linejoin="round"/>
+          <g transform="rotate(-21.25 120 89)">
+            <rect x="104" y="66" width="32" height="22" rx="3" fill="var(--energy)" opacity=".9"/>
+          </g>
+          <line x1="224" y1="54" x2="224" y2="124" stroke="var(--ink)" stroke-width="2"/>
+          <line x1="218" y1="54" x2="230" y2="54" stroke="var(--ink)" stroke-width="2"/>
+          <line x1="218" y1="124" x2="230" y2="124" stroke="var(--ink)" stroke-width="2"/>
+          <text x="214" y="94" text-anchor="end" font-size="16" font-style="italic" font-family="Georgia, serif" fill="var(--ink)">h</text>
+          <circle cx="56" cy="62" r="20" fill="none" stroke="var(--ink)" stroke-width="3"/>
+          <rect x="51" y="36" width="10" height="5" rx="1" fill="var(--ink)"/>
+          <line x1="56" y1="62" x2="56" y2="48" stroke="var(--energy)" stroke-width="3" stroke-linecap="round"/>
+          <line x1="56" y1="62" x2="66" y2="66" stroke="var(--ink)" stroke-width="3" stroke-linecap="round"/>
+          <text x="120" y="152" text-anchor="middle" font-size="18" font-style="italic" font-family="Georgia, serif" fill="var(--ink)">P = W / Δt</text>
+        </svg>
+      </div>
+      <div class="body">
+        <span class="topic">Unit 3</span>
+        <h3>Work, Energy &amp; Power</h3>
+        <p>Explore work, energy transfer, and power in one interactive lesson.</p>
+        <span class="go">Open interactive</span>
+      </div>
+    </a>
+    </div>
+  </section>
+
+  <section>
+    <h2 class="unit">Unit 5 · Torque and Rotational Dynamics</h2>
+    <div class="choices">
     <a class="choice torque" href="Spool%20Torque%20Lab.html">
       <div class="art" aria-hidden="true">
         <svg viewBox="0 0 240 160">
@@ -199,12 +269,17 @@
       </div>
       <div class="body">
         <span class="topic">Unit 5</span>
-        <h2>Torque</h2>
+        <h3>Torque</h3>
         <p>Lever arms, torque from forces at an angle, and rotational equilibrium.</p>
         <span class="go">Start spool torque lab</span>
       </div>
     </a>
+    </div>
+  </section>
 
+  <section>
+    <h2 class="unit">Circuits</h2>
+    <div class="choices">
     <a class="choice rc" href="RC%20Circuits_%20Interactive%20Lesson.html">
       <div class="art" aria-hidden="true">
         <svg viewBox="0 0 240 160">
@@ -227,12 +302,13 @@
       </div>
       <div class="body">
         <span class="topic">Circuits</span>
-        <h2>RC Circuits</h2>
+        <h3>RC Circuits</h3>
         <p>Charging and discharging capacitors, current over time, and the time constant.</p>
         <span class="go">Start RC circuits lesson</span>
       </div>
     </a>
-  </div>
+    </div>
+  </section>
 </main>
 </body>
 </html>
