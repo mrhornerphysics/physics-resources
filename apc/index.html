@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>AP Physics C · Physics Practice</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #eef3f8;
+    --ink: #13233a;
+    --muted: #4c5d74;
+    --panel: #ffffff;
+    --line: #c9d5e3;
+    --grav: #2f5fd0;
+    --circ: #c2410c;
+    --energy: #15803d;
+    --torque: #7c3aed;
+    --rc: #0e7490;
+    --focus: #f5b301;
+    color-scheme: light;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #0f1a2b;
+      --ink: #e6edf6;
+      --muted: #a3b2c6;
+      --panel: #17253b;
+      --line: #2c3f5a;
+      --grav: #7ea2ff;
+      --circ: #ff9a5c;
+      --energy: #5fd48a;
+      --torque: #b79bff;
+      --rc: #5ccfe6;
+      color-scheme: dark;
+    }
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; }
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: "Atkinson Hyperlegible", system-ui, -apple-system, "Segoe UI", sans-serif;
+    font-size: 1.125rem;
+    line-height: 1.5;
+    min-height: 100vh;
+    padding: max(2rem, env(safe-area-inset-top)) 1.25rem max(2rem, env(safe-area-inset-bottom));
+  }
+  main { max-width: 56rem; margin: 0 auto; }
+  header { margin: 1rem 0 2.5rem; }
+  h1 {
+    font-family: "Bricolage Grotesque", "Atkinson Hyperlegible", system-ui, sans-serif;
+    font-weight: 800;
+    font-size: clamp(2.25rem, 6vw, 3.75rem);
+    line-height: 1.02;
+    letter-spacing: -0.02em;
+    margin: 0 0 0.75rem;
+  }
+  header p { margin: 0; color: var(--muted); max-width: 36rem; }
+
+  .choices {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(16rem, 1fr));
+    gap: 1.5rem;
+  }
+  .choice {
+    --accent: var(--grav);
+    display: flex;
+    flex-direction: column;
+    text-decoration: none;
+    color: inherit;
+    background: var(--panel);
+    border: 2px solid var(--line);
+    border-radius: 18px;
+    overflow: hidden;
+    transition: border-color .15s, transform .15s;
+  }
+  .choice.circ { --accent: var(--circ); }
+  .choice.energy { --accent: var(--energy); }
+  .choice.torque { --accent: var(--torque); }
+  .choice.rc { --accent: var(--rc); }
+  .choice:hover { border-color: var(--accent); transform: translateY(-3px); }
+  .choice:focus-visible { outline: 4px solid var(--focus); outline-offset: 3px; }
+  .art {
+    background: color-mix(in srgb, var(--accent) 10%, var(--panel));
+    border-bottom: 2px solid var(--line);
+    display: grid; place-items: center;
+    padding: 1.25rem;
+  }
+  .art svg { width: 100%; max-width: 240px; height: auto; }
+  .body { padding: 1.25rem 1.5rem 1.5rem; display: flex; flex-direction: column; gap: .5rem; flex: 1; }
+  .topic { color: var(--accent); font-weight: 700; font-size: 1rem; }
+  h2.unit {
+    font-family: "Bricolage Grotesque", "Atkinson Hyperlegible", system-ui, sans-serif;
+    font-weight: 800; font-size: 1.35rem; margin: 0 0 1rem;
+    padding-bottom: .5rem; border-bottom: 2px solid var(--line);
+  }
+  section + section { margin-top: 3rem; }
+  h3 {
+    font-family: "Bricolage Grotesque", "Atkinson Hyperlegible", system-ui, sans-serif;
+    font-weight: 600; font-size: 1.75rem; line-height: 1.1; margin: 0;
+  }
+  .body p { margin: 0; color: var(--muted); }
+  .go {
+    margin-top: auto; padding-top: 1rem;
+    font-weight: 700; color: var(--accent);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .choice { transition: none; }
+    .choice:hover { transform: none; }
+    .orbit { animation: none !important; }
+  }
+  .orbit { transform-origin: 120px 80px; animation: spin 6s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .back {
+    display: inline-flex; align-items: center; gap: .4rem;
+    font-weight: 700; color: var(--accent-page, var(--grav)); text-decoration: none;
+    padding: .35rem .1rem; margin-bottom: 1rem; border-radius: 6px;
+  }
+  .back:hover { text-decoration: underline; }
+  .back:focus-visible { outline: 4px solid var(--focus); outline-offset: 3px; }
+  .contents { margin: .25rem 0 0; padding-left: 1.1rem; color: var(--muted); }
+  .contents li { margin: 0; }
+  footer { margin-top: 3rem; padding-top: 1.25rem; border-top: 2px solid var(--line); }
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <a class="back" href="../index.html"><span aria-hidden="true">←</span> All physics resources</a>
+    <h1>AP Physics C</h1>
+    <p>Pick a quiz, lab, or interactive to start. Each one opens in this tab, so use your browser’s back button to return here.</p>
+  </header>
+
+  <section>
+    <h2 class="unit">Torque and Rotational Dynamics</h2>
+    <div class="choices">
+    <a class="choice torque" href="spooltorquelab.html">
+      <div class="art" aria-hidden="true">
+        <svg viewBox="0 0 240 160">
+          <rect x="34" y="88" width="176" height="12" rx="4" fill="var(--torque)" opacity=".85"/>
+          <path d="M50 100 L40 122 L60 122 Z" fill="var(--ink)"/>
+          <circle cx="50" cy="94" r="4" fill="var(--panel)" stroke="var(--ink)" stroke-width="2"/>
+          <line x1="50" y1="76" x2="196" y2="76" stroke="var(--ink)" stroke-width="2" stroke-dasharray="5 4"/>
+          <text x="123" y="68" text-anchor="middle" font-size="16" font-style="italic" font-family="Georgia, serif" fill="var(--ink)">r</text>
+          <line x1="198" y1="88" x2="198" y2="38" stroke="var(--ink)" stroke-width="4" stroke-linecap="round"/>
+          <path d="M190 42 L198 26 L206 42 Z" fill="var(--ink)"/>
+          <text x="214" y="50" font-size="16" font-style="italic" font-family="Georgia, serif" fill="var(--ink)">F</text>
+          <path d="M28 70 A28 28 0 0 1 72 64" fill="none" stroke="var(--torque)" stroke-width="3"/>
+          <path d="M66 58 L76 62 L68 70 Z" fill="var(--torque)"/>
+          <text x="120" y="146" text-anchor="middle" font-size="18" font-style="italic" font-family="Georgia, serif" fill="var(--ink)">τ = rF sin θ</text>
+        </svg>
+      </div>
+      <div class="body">
+        <span class="topic">Unit 5</span>
+        <h3>Torque</h3>
+        <p>Lever arms, torque from forces at an angle, and rotational equilibrium.</p>
+        <span class="go">Start spool torque lab</span>
+      </div>
+    </a>
+    </div>
+  </section>
+  <section>
+    <h2 class="unit">Circuits</h2>
+    <div class="choices">
+    <a class="choice rc" href="rccircuitsinteractivelesson.html">
+      <div class="art" aria-hidden="true">
+        <svg viewBox="0 0 240 160">
+          <g fill="none" stroke="var(--ink)" stroke-width="3" stroke-linejoin="round" stroke-linecap="round">
+            <path d="M50 70 L50 30 L90 30"/>
+            <path d="M90 30 L96 20 L106 40 L116 20 L126 40 L136 20 L144 40 L150 30"/>
+            <path d="M150 30 L190 30 L190 70"/>
+            <path d="M190 96 L190 130 L50 130 L50 96"/>
+          </g>
+          <line x1="174" y1="70" x2="206" y2="70" stroke="var(--rc)" stroke-width="5" stroke-linecap="round"/>
+          <line x1="174" y1="96" x2="206" y2="96" stroke="var(--rc)" stroke-width="5" stroke-linecap="round"/>
+          <line x1="34" y1="70" x2="66" y2="70" stroke="var(--ink)" stroke-width="4" stroke-linecap="round"/>
+          <line x1="42" y1="82" x2="58" y2="82" stroke="var(--ink)" stroke-width="4" stroke-linecap="round"/>
+          <path d="M50 82 L50 96" stroke="var(--ink)" stroke-width="3"/>
+          <path d="M50 70 L50 70" stroke="var(--ink)" stroke-width="3"/>
+          <text x="120" y="60" text-anchor="middle" font-size="16" font-style="italic" font-family="Georgia, serif" fill="var(--ink)">R</text>
+          <text x="218" y="89" font-size="16" font-style="italic" font-family="Georgia, serif" fill="var(--ink)">C</text>
+          <text x="120" y="112" text-anchor="middle" font-size="18" font-style="italic" font-family="Georgia, serif" fill="var(--ink)">τ = RC</text>
+        </svg>
+      </div>
+      <div class="body">
+        <span class="topic">Circuits</span>
+        <h3>RC Circuits</h3>
+        <p>Charging and discharging capacitors, current over time, and the time constant.</p>
+        <span class="go">Start RC circuits lesson</span>
+      </div>
+    </a>
+    </div>
+  </section>
+
+  <footer>
+    <a class="back" href="../index.html"><span aria-hidden="true">←</span> All physics resources</a>
+  </footer>
+</main>
+</body>
+</html>
